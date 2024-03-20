@@ -1,9 +1,12 @@
 <script setup>
 import { ref, onBeforeMount, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useLayout } from '@/layout/composables/layout';
+import { ApiService } from '@/common/apiService.js'
 
 const route = useRoute();
+const router = useRouter();
+const apiService = new ApiService();
 
 const { layoutConfig, layoutState, setActiveMenuItem, onMenuToggle } = useLayout();
 
@@ -44,6 +47,13 @@ watch(
     }
 );
 const itemClick = (event, item) => {
+    if (item.label === 'Logout') {
+        apiService.logoutFromKeycloak();
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('jwtRefreshToken');
+        localStorage.removeItem('username');
+        router.push('/auth/login');
+    }
     if (item.disabled) {
         event.preventDefault();
         return;

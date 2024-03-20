@@ -1,6 +1,9 @@
-import { createApp } from 'vue';
+import { createApp,computed  } from 'vue';
 import App from './App.vue';
 import router from './router';
+import Keycloak from 'keycloak-js';
+import store from './store'; // Εισαγωγή του store
+
 
 import PrimeVue from 'primevue/config';
 import AutoComplete from 'primevue/autocomplete';
@@ -101,17 +104,19 @@ import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
 
 import BlockViewer from '@/components/BlockViewer.vue';
+import Login from '@/views/pages/auth/Login.vue';
+
 
 import '@/assets/styles.scss';
 
 const app = createApp(App);
 
-app.use(router);
+// app.use(router);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
 app.use(DialogService);
 app.use(ConfirmationService);
-
+app.use(store); 
 app.directive('tooltip', Tooltip);
 app.directive('badge', BadgeDirective);
 app.directive('ripple', Ripple);
@@ -209,4 +214,81 @@ app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
 app.component('VirtualScroller', VirtualScroller);
 
+
+router.beforeEach((to, from, next) => {
+    const auth = computed(() => {
+        const jwtToken = localStorage.getItem('jwtToken');
+        const jwtRefreshToken = localStorage.getItem('jwtRefreshToken');
+        const username = localStorage.getItem('username');
+    
+        return !!jwtToken && !!jwtRefreshToken && !!username;
+    }); 
+       console.log(auth.value);
+    if (!auth.value && to.path !== '/auth/login') {
+        next('/auth/login');
+    } else if  (auth.value && to.path === '/auth/login') {
+        next('/');
+    } else {
+        next();
+    }
+});
+let initOps =  {
+    url: 'http://127.0.0.1:8080/auth',
+    realm: 'myrealm',
+    clientId: 'myclient',
+    onLoad: 'login-required'
+};
+let keycloak = new Keycloak(initOps);
+console.log('keycloak');
+
+console.log(keycloak);
+
+app.use(router);
+app.use(store); 
 app.mount('#app');
+let isAuthenticated = false;
+if (localStorage.getItem('jwtToken') && localStorage.getItem('jwtRefreshToken') && localStorage.getItem('username')){
+    console.log("User ...");
+
+     isAuthenticated = true;  ///store.state.isLoggedIn; // Υποθέτουμε ότι εδώ έχετε τον τρόπο να ελέγξετε την πιστοποίηση του χρήστη
+    ///EDW PREPEI NA MPEI I CHECK AUTH TOKEN
+ }
+ console.log(isAuthenticated);
+if (!isAuthenticated) {
+    console.log("User is not authenticated. Redirecting to login page...");
+    router.push('/auth/login'); // Redirect στη σελίδα σύνδεσης
+} else {
+  //  router.push('/');
+
+    console.log("User is authenticated");
+    // Εφόσον ο χρήστης είναι πιστοποιημένος, μπορείτε να συνεχίσετε την εκκίνηση της εφαρμογής
+
+}
+
+
+
+//   keycloak.init({ onLoad: 'login-required' }).then((authenticated) => {
+//     if (authenticated) {
+//       console.log("User is authenticated");
+//     } else {
+//       console.log("User is not authenticated");
+//     }
+  
+//     new Vue({
+//       router,
+//       render: h => h(App)
+//     }).$mount('#app');
+//   }).catch((e) => {
+//     console.error("Keycloak initialization failed", e);
+//   }); 
+// Router navigation guard
+// router.beforeEach((to, from, next) => {
+//     if (to.meta.requiresAuth && !keycloak.authenticated) {
+//       next('/auth/login');
+//     } else {
+//       next();
+//     }
+//   });
+
+//   app.mount('#app');
+

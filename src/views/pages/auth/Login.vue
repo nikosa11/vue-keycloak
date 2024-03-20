@@ -1,18 +1,3 @@
-<script setup>
-import { useLayout } from '@/layout/composables/layout';
-import { ref, computed } from 'vue';
-import AppConfig from '@/layout/AppConfig.vue';
-
-const { layoutConfig } = useLayout();
-const email = ref('');
-const password = ref('');
-const checked = ref(false);
-
-const logoUrl = computed(() => {
-    return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
-});
-</script>
-
 <template>
     <div class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
         <div class="flex flex-column align-items-center justify-content-center">
@@ -39,7 +24,7 @@ const logoUrl = computed(() => {
                             </div>
                             <a class="font-medium no-underline ml-2 text-right cursor-pointer" style="color: var(--primary-color)">Forgot password?</a>
                         </div>
-                        <Button label="Sign In" class="w-full p-3 text-xl"></Button>
+                        <Button label="Sign In" class="w-full p-3 text-xl" @click="loginToKeycloak"></Button>
                     </div>
                 </div>
             </div>
@@ -47,6 +32,55 @@ const logoUrl = computed(() => {
     </div>
     <AppConfig simple />
 </template>
+
+<script setup>
+import { useLayout } from '@/layout/composables/layout';
+import { ref, computed } from 'vue';
+import AppConfig from '@/layout/AppConfig.vue';
+import { ApiService } from '@/common/apiService.js'
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const store = useStore();
+const { layoutConfig } = useLayout();
+const email = ref('');
+const password = ref('');
+const checked = ref(false);
+const apiService = new ApiService();
+const isLoggedIn = store.state.isLoggedIn; // Χρήση της computed που αντιστοιχεί στο isLoggedIn
+let  msg = ref('');
+console.log(isLoggedIn);
+
+
+const logoUrl = computed(() => {
+    return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
+});
+
+const loginToKeycloak = async () => {
+    try {
+        const keycloakData = await apiService.loginToKeycloak(email.value, password.value);
+        if (keycloakData.responseEnum === 'OPERATION_SUCCESS'){
+            store.commit('login');
+            console.log(email.value);
+            localStorage.setItem('jwtToken',keycloakData.access_token);
+            localStorage.setItem('jwtRefreshToken',keycloakData.refresh_token);
+            localStorage.setItem('username',email.value);
+            console.log('Επιτυχής σύνδεση στο Keycloak:', keycloakData);
+            router.push('/');
+
+        } else {
+            msg = 'error';
+
+        }
+    } catch (error) {
+        msg = 'error';
+
+        console.error('Σφάλμα κατά την σύνδεση στο Keycloak:', error.message);
+    }
+};
+</script>
 
 <style scoped>
 .pi-eye {

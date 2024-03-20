@@ -35,6 +35,7 @@ const lineOptions = ref(null);
 const productService = new ProductService();
 
 onMounted(() => {
+    console.log('TEST')
     productService.getProductsSmall().then((data) => (products.value = data));
 });
 
