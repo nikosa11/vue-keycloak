@@ -112,6 +112,11 @@ const router = createRouter({
                     component: () => import('@/views/uikit/Misc.vue')
                 },
                 {
+                    path: '/uikit/myPage',
+                    name: 'myPage',
+                    component: () => import('@/views/uikit/MyPage.vue')
+                },
+                {
                     path: '/blocks',
                     name: 'blocks',
                     component: () => import('@/views/utilities/Blocks.vue')

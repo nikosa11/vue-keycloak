@@ -1,16 +1,11 @@
+import { apiurl, apiurlKeycloack, realm, clientId, clientSecret } from '../../appProperties';
+
 export class ApiService {
 
-	constructor(args) {
-		this.apiurl = "http://195.201.6.104:1369";
-		this.apiurlKeycloack = "https://49.12.229.66:8443/";
-        this.realm = "myrealm";
-        this.clientId ="myclient";
-        this.clientSecret ="N3vxdZsusj1SsfJEbt97IgSayXYfQm1R";
-  
-	}
+	
 
 	async getLogin(formData) {
-		const response = await fetch(this.apiurl + '/v1/login/', {
+		const response = await fetch(apiurl + '/v1/login/', {
 				method: 'POST',
 				headers: { 
 					Accept: 'application/json',
@@ -38,7 +33,7 @@ export class ApiService {
 	}
 
 	async getMapData() {
-		const response = await fetch(this.apiurl + '/v1/getusermap/' + PnoJS.utils.getCookie('glk-u'), {
+		const response = await fetch(apiurl + '/v1/getusermap/' + PnoJS.utils.getCookie('glk-u'), {
 				headers: { Authorization: 'Bearer test111test' }
 			});
 		const rem = await response.json();
@@ -46,7 +41,7 @@ export class ApiService {
 	}
 
 	async getAllDevices() {
-		const response = await fetch(this.apiurl + '/v1/devices/all', {
+		const response = await fetch(apiurl + '/v1/devices/all', {
 				headers: { Authorization: 'Bearer test111test' }
 			});
 		const rem = await response.json();
@@ -54,7 +49,7 @@ export class ApiService {
 	}
 
 	async getAllUsers() {
-		const response = await fetch(this.apiurl + '/v1/users/all?page_num=1&page_size=1000', {
+		const response = await fetch(apiurl + '/v1/users/all?page_num=1&page_size=1000', {
 				headers: { Authorization: 'Bearer test111test' }
 			});
 		const rem = await response.json();
@@ -62,7 +57,7 @@ export class ApiService {
 	}
 
 	async getAllGroups() {
-		const response = await fetch(this.apiurl + '/v1/groups/all?page_num=1&page_size=1000', {
+		const response = await fetch(apiurl + '/v1/groups/all?page_num=1&page_size=1000', {
 				headers: { Authorization: 'Bearer test111test' }
 			});
 		const rem = await response.json();
@@ -71,7 +66,7 @@ export class ApiService {
 
 	async editGroup(data) {
 		let devices = data.devices.map((item) => { return item.col_id});
-		const response = await fetch(this.apiurl + '/v1/group/', {
+		const response = await fetch(apiurl + '/v1/group/', {
 				method: 'PATCH',
 				headers: { 
 					Accept: 'application/json',
@@ -97,7 +92,7 @@ export class ApiService {
 
 	async saveUser(data) {
 			
-		const response = await fetch(this.apiurl + '/v1/user/', {
+		const response = await fetch(apiurl + '/v1/user/', {
 				method: 'POST',
 				headers: { 
 					Accept: 'application/json',
@@ -125,7 +120,7 @@ export class ApiService {
 
 	async editUser(data) {
 		let groups = data.groups.map((item) => { return item.id});
-		const response = await fetch(this.apiurl + '/v1/user/', {
+		const response = await fetch(apiurl + '/v1/user/', {
 				method: 'PATCH',
 				headers: { 
 					Accept: 'application/json',
@@ -153,7 +148,7 @@ export class ApiService {
 	}
 
 	async deleteUser(username) {
-		const response = await fetch(this.apiurl + '/v1/user/' + username, {
+		const response = await fetch(apiurl + '/v1/user/' + username, {
 				method: 'DELETE',
 				headers: { 
 					Accept: 'application/json',
@@ -172,15 +167,25 @@ export class ApiService {
 	}
 
 	async loginToKeycloak(username, password) {
-        const url = `${this.apiurlKeycloack}realms/${this.realm}/protocol/openid-connect/token`;
-        
+        const url = `${apiurlKeycloack}realms/${realm}/protocol/openid-connect/token`;
+
         const formData = new URLSearchParams();
-        formData.append('client_id', this.clientId);
-        formData.append('client_secret', this.clientSecret);
+        formData.append('client_id', clientId);
+        formData.append('client_secret', clientSecret);
         formData.append('username', username);
         formData.append('password', password);
         formData.append('grant_type', 'password');
-        
+		// const response = await fetch(url, {
+		// 	method: 'POST',
+		// 	headers: { 
+        //         'Content-Type': 'application/x-www-form-urlencoded'
+		// 		 },
+		// 		 body: formData
+
+		// });
+		// console.log('TESTTTTTTTTTTTT');
+		// console.log (response);
+
         return fetch(url, {
             method: 'POST',
             headers: {
@@ -208,9 +213,9 @@ export class ApiService {
     }
 
 	async  logoutFromKeycloak() {
-		const url = `${this.apiurlKeycloack}realms/${this.realm}/protocol/openid-connect/logout`;
-		const clientId = this.clientId;
-		const clientSecret = this.clientSecret;
+		const url = `${apiurlKeycloack}realms/${realm}/protocol/openid-connect/logout`;
+		const clientId = clientId;
+		const clientSecret = clientSecret;
 		const refreshToken = localStorage.getItem('jwtRefreshToken');
 		const formData = new URLSearchParams();
 		formData.append('client_id', clientId);
