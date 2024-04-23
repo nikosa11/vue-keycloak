@@ -168,6 +168,12 @@ export class ApiService {
 
 	async loginToKeycloak(username, password) {
         const url = `${apiurlKeycloack}realms/${realm}/protocol/openid-connect/token`;
+		console.log('clientId');
+
+		console.log(clientId);
+		console.log(clientSecret);
+		console.log(password);
+		console.log(username);
 
         const formData = new URLSearchParams();
         formData.append('client_id', clientId);
@@ -214,13 +220,13 @@ export class ApiService {
 
 	async  logoutFromKeycloak() {
 		const url = `${apiurlKeycloack}realms/${realm}/protocol/openid-connect/logout`;
-		const clientId = clientId;
-		const clientSecret = clientSecret;
-		const refreshToken = localStorage.getItem('jwtRefreshToken');
+		const clientId1 = clientId;
+		const clientSecret1 = clientSecret;
+		const refreshToken1 = localStorage.getItem('jwtRefreshToken');
 		const formData = new URLSearchParams();
-		formData.append('client_id', clientId);
-		formData.append('client_secret', clientSecret);
-		formData.append('refresh_token', refreshToken);
+		formData.append('client_id', clientId1);
+		formData.append('client_secret', clientSecret1);
+		formData.append('refresh_token', refreshToken1);
 	
 		try {
 			const response = await fetch(url, {
