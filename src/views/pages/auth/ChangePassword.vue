@@ -75,9 +75,13 @@ const changePassword = async () => {
     apiService.resetPassword(userId,  password2.value)
     .then((responseData) => {
         console.log('Reset password response:', responseData);
+        alert('password changed');
+
         router.push('/');
     })
     .catch((error) => {
+        alert('Reset password failed:');
+
         console.error('Reset password failed:', error);
     });
     
