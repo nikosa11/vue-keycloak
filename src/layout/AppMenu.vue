@@ -24,6 +24,12 @@ const model = ref([
 
                     },
                     {
+                        label: 'Change Password',
+                        icon: 'pi pi-fw pi pi-user',
+                        to: '/auth/changePassword'
+
+                    },
+                    {
                         label: 'Error',
                         icon: 'pi pi-fw pi-times-circle',
                         to: '/auth/error'

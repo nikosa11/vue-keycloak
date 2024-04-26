@@ -107,6 +107,7 @@ import BlockViewer from '@/components/BlockViewer.vue';
 import Login from '@/views/pages/auth/Login.vue';
 
 
+
 import '@/assets/styles.scss';
 
 const app = createApp(App);

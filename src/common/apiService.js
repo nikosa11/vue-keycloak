@@ -181,16 +181,6 @@ export class ApiService {
         formData.append('username', username);
         formData.append('password', password);
         formData.append('grant_type', 'password');
-		// const response = await fetch(url, {
-		// 	method: 'POST',
-		// 	headers: { 
-        //         'Content-Type': 'application/x-www-form-urlencoded'
-		// 		 },
-		// 		 body: formData
-
-		// });
-		// console.log('TESTTTTTTTTTTTT');
-		// console.log (response);
 
         return fetch(url, {
             method: 'POST',
@@ -244,6 +234,101 @@ export class ApiService {
 			console.log('logout completted');
 		} catch (error) {
 			console.error('Error during logout:', error.message);
+			throw error;
+		}
+	}
+
+	async  resetPassword(userId, newPassword) {
+		const resetUrl = `${apiurlKeycloack}admin/realms/myrealm/users/${userId}/reset-password`;
+	
+		const accessToken = localStorage.getItem('jwtToken');
+	
+		const requestBody = {
+			type: 'password',
+			value: newPassword,
+			temporary: false
+		};
+	
+		try {
+			const response = await fetch(resetUrl, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${accessToken}`
+				},
+				body: JSON.stringify(requestBody)
+			});
+	
+			if (!response.ok) {
+				throw new Error('Failed to reset password');
+			}
+	
+			console.log(response);
+			//const responseData = await response.json();
+			//console.log('Password reset successful:', responseData);
+	
+			return 'completted';
+		} catch (error) {
+			console.error('Error resetting password:', error.message);
+			throw error; 
+		}
+	}
+
+
+	async  getUserInfo() {
+		const url = `${apiurlKeycloack}realms/${realm}/protocol/openid-connect/userinfo?scope=openid`;
+		const accessToken = localStorage.getItem('jwtToken');
+	
+		try {
+			const response = await fetch(url, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'Authorization': `Bearer ${accessToken}`
+				}
+			});
+	
+			if (!response.ok) {
+				throw new Error('Failed to fetch user info');
+			}
+	
+			const userInfo = await response.json();
+			console.log('User Info:', userInfo);
+			return userInfo;
+		} catch (error) {
+			console.error('Error fetching user info:', error.message);
+		}
+	}
+	
+
+	async  changePasswordInKeycloak(oldPassword, newPassword) {
+		const url = `${apiurlKeycloack}realms/${realm}/account/credentials/password`;
+		const accessToken = localStorage.getItem('jwtToken');
+	
+		const data = {
+			currentPassword: oldPassword,
+			newPassword: newPassword,
+			confirmation: newPassword
+		};
+	
+		try {
+			const response = await fetch(url, {
+				method: 'POST',
+				headers: {
+					'Accept': 'application/json',
+					'Authorization': `Bearer ${accessToken}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			});
+	
+			if (!response.ok) {
+				throw new Error('Error changing password');
+			}
+	
+			console.log('Password changed successfully');
+		} catch (error) {
+			console.error('Error changing password:', error.message);
 			throw error;
 		}
 	}
