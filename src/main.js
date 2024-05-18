@@ -224,12 +224,19 @@ router.beforeEach((to, from, next) => {
     
         return !!jwtToken && !!jwtRefreshToken && !!username;
     }); 
+    console.log('hr8324eew');
+
        console.log(auth.value);
-    if (!auth.value && to.path !== '/auth/login') {
+    if (!auth.value && (to.path !== '/auth/login' && to.path !== '/auth/access')) {
+        console.log('hr8eew');
         next('/auth/login');
     } else if  (auth.value && to.path === '/auth/login') {
+        console.log('hr8eew3132');
+
         next('/');
     } else {
+        console.log(to);
+
         next();
     }
 });

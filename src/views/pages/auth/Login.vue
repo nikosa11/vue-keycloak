@@ -66,14 +66,24 @@ const loginToKeycloak = async () => {
             localStorage.setItem('jwtRefreshToken',keycloakData.refresh_token);
             localStorage.setItem('username',email.value);
             console.log('Επιτυχής σύνδεση στο Keycloak:', keycloakData);
+            console.log(store.state.userData);
+
+            const userInfo = await apiService.getUserInfo();
+            store.commit('setUserData',userInfo);
+            console.log(store.state.userData);
+
             router.push('/');
 
         } else {
+            router.push('/auth/access');
+
             msg = 'error';
 
         }
     } catch (error) {
         msg = 'error';
+        router.push('/accessDenied');
+
 
         console.error('Σφάλμα κατά την σύνδεση στο Keycloak:', error.message);
     }

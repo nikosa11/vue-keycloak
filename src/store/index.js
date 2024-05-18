@@ -5,7 +5,7 @@ const store = createStore({
     return {
       count: 0,
       isLoggedIn: false,
-      userData: null
+      userData: {}
     };
   },
   mutations: {

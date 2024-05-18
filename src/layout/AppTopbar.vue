@@ -2,12 +2,14 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
+import { ApiService } from '@/common/apiService.js'
 
 const { layoutConfig, onMenuToggle } = useLayout();
 
 const outsideClickListener = ref(null);
 const topbarMenuActive = ref(false);
 const router = useRouter();
+const apiService = new ApiService();
 
 onMounted(() => {
     bindOutsideClickListener();
@@ -20,7 +22,17 @@ onBeforeUnmount(() => {
 const logoUrl = computed(() => {
     return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
 });
-
+const profile = async () => {
+    router.push('/uikit/profile');
+    
+};
+const logOut = async () => {
+    apiService.logoutFromKeycloak();
+    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('jwtRefreshToken');
+    localStorage.removeItem('username');
+    router.push('/auth/login');
+}
 const onTopBarMenuButton = () => {
     topbarMenuActive.value = !topbarMenuActive.value;
 };
@@ -80,13 +92,12 @@ const isOutsideClicked = (event) => {
                 <i class="pi pi-calendar"></i>
                 <span>Calendar</span>
             </button>
-            <button @click="onTopBarMenuButton()" class="p-link layout-topbar-button">
+            <button @click="profile()" class="p-link layout-topbar-button">
                 <i class="pi pi-user"></i>
                 <span>Profile</span>
             </button>
-            <button @click="onSettingsClick()" class="p-link layout-topbar-button">
-                <i class="pi pi-cog"></i>
-                <span>Settings</span>
+            <button @click="logOut()" class="p-link layout-topbar-button">
+                <i class="pi pi-fw pi-sign-in layout-menuitem-icon"></i>
             </button>
         </div>
     </div>

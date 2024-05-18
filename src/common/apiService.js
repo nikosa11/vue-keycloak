@@ -279,7 +279,6 @@ export class ApiService {
 		const url = `${apiurlKeycloack}realms/${realm}/protocol/openid-connect/userinfo?scope=openid`;
 		const accessToken = localStorage.getItem('jwtToken');
 	
-		try {
 			const response = await fetch(url, {
 				method: 'GET',
 				headers: {
@@ -295,9 +294,7 @@ export class ApiService {
 			const userInfo = await response.json();
 			console.log('User Info:', userInfo);
 			return userInfo;
-		} catch (error) {
-			console.error('Error fetching user info:', error.message);
-		}
+		
 	}
 	
 
