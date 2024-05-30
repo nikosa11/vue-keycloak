@@ -13,7 +13,6 @@ const apiService = new ApiService();
   apiService.getUserInfo().then(response => {
     store.commit('setUserData',response);
 }).catch(error => {
-    console.error('UNOTH')
     localStorage.removeItem('jwtToken');
         localStorage.removeItem('jwtRefreshToken');
         localStorage.removeItem('username');

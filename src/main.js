@@ -224,14 +224,11 @@ router.beforeEach((to, from, next) => {
     
         return !!jwtToken && !!jwtRefreshToken && !!username;
     }); 
-    console.log('hr8324eew');
 
        console.log(auth.value);
-    if (!auth.value && (to.path !== '/auth/login' && to.path !== '/auth/access')) {
-        console.log('hr8eew');
+    if (!auth.value && (to.path !== '/auth/login' && to.path !== '/auth/access' && to.path !== '/landing' && to.path !== '/register') ) {
         next('/auth/login');
-    } else if  (auth.value && to.path === '/auth/login') {
-        console.log('hr8eew3132');
+    } else if  (auth.value && (to.path === '/auth/login' || to.path === '/landing' || to.path === '/register')) {
 
         next('/');
     } else {
@@ -247,9 +244,7 @@ let initOps =  {
     onLoad: 'login-required'
 };
 let keycloak = new Keycloak(initOps);
-console.log('keycloak');
 
-console.log(keycloak);
 
 app.use(router);
 app.use(store); 
@@ -259,19 +254,19 @@ if (localStorage.getItem('jwtToken') && localStorage.getItem('jwtRefreshToken') 
     console.log("User ...");
 
      isAuthenticated = true;  ///store.state.isLoggedIn; // Υποθέτουμε ότι εδώ έχετε τον τρόπο να ελέγξετε την πιστοποίηση του χρήστη
-    ///EDW PREPEI NA MPEI I CHECK AUTH TOKEN
  }
  console.log(isAuthenticated);
-if (!isAuthenticated) {
-    console.log("User is not authenticated. Redirecting to login page...");
-    router.push('/auth/login'); // Redirect στη σελίδα σύνδεσης
-} else {
-  //  router.push('/');
+// if (!isAuthenticated) {
+//     console.log(router);
+//     console.log("User is not authenticated. Redirecting to login page...");
+//     router.push('/auth/login'); // Redirect στη σελίδα σύνδεσης
+// } else {
+//   //  router.push('/');
 
-    console.log("User is authenticated");
-    // Εφόσον ο χρήστης είναι πιστοποιημένος, μπορείτε να συνεχίσετε την εκκίνηση της εφαρμογής
+//     console.log("User is authenticated");
+//     // Εφόσον ο χρήστης είναι πιστοποιημένος, μπορείτε να συνεχίσετε την εκκίνηση της εφαρμογής
 
-}
+// }
 
 
 

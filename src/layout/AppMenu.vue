@@ -14,32 +14,32 @@ const model = ref([
         to: '/pages',
         items: [
             {
-                label: 'Auth',
-                icon: 'pi pi-fw pi-user',
-                items: [
-                    {
-                        label: 'Logout',
-                        icon: 'pi pi-fw pi-sign-in',
-                        to: '/auth/login'
+                // label: 'Auth',
+                // icon: 'pi pi-fw pi-user',
+                // items: [
+                //     {
+                //         label: 'Logout',
+                //         icon: 'pi pi-fw pi-sign-in',
+                //         to: '/auth/login'
 
-                    },
-                    {
-                        label: 'Change Password',
-                        icon: 'pi pi-fw pi pi-user',
-                        to: '/auth/changePassword'
+                //     },
+                //     {
+                //         label: 'Change Password',
+                //         icon: 'pi pi-fw pi pi-user',
+                //         to: '/auth/changePassword'
 
-                    },
-                    {
-                        label: 'Error',
-                        icon: 'pi pi-fw pi-times-circle',
-                        to: '/auth/error'
-                    },
-                    {
-                        label: 'Access Denied',
-                        icon: 'pi pi-fw pi-lock',
-                        to: '/auth/access'
-                    }
-                ]
+                //     },
+                //     {
+                //         label: 'Error',
+                //         icon: 'pi pi-fw pi-times-circle',
+                //         to: '/auth/error'
+                //     },
+                //     {
+                //         label: 'Access Denied',
+                //         icon: 'pi pi-fw pi-lock',
+                //         to: '/auth/access'
+                //     }
+                // ]
             },
             // {
             //     label: 'Crud',

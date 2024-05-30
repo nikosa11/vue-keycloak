@@ -329,6 +329,75 @@ export class ApiService {
 			throw error;
 		}
 	}
+	async getAccessToken() {
+        const url = `${apiurlKeycloack}realms/${realm}/protocol/openid-connect/token`;
+        const formData = new URLSearchParams();
+        formData.append('client_id', clientId);
+        formData.append('client_secret', clientSecret);
+        formData.append('grant_type', 'client_credentials');
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to obtain access token');
+            }
+
+            const data = await response.json();
+            return data.access_token;
+        } catch (error) {
+            console.error('Error obtaining access token:', error.message);
+            throw error;
+        }
+    }
+
+	async createUserInKeycloak(userData) {
+        const url = `${apiurlKeycloack}admin/realms/${realm}/users`;
+        const accessToken = await this.getAccessToken();
+
+        const user = {
+            username: userData.username,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            enabled: true,
+			emailVerified: true,
+            credentials: [{
+                type: 'password',
+                value: userData.password,
+                temporary: false
+            }]
+        };
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(user)
+            });
+
+           if (response.status === 201) {
+			return "SUCCESS"
+		   }
+
+
+
+            const createdUser = await response.json();
+			if (response.status === 409) {
+				return "ALREADY_REGISTER";
+			}
+
+            return "SERVER_ERROR";
+        
+    }
 
 
 }
