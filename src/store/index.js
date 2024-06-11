@@ -5,7 +5,8 @@ const store = createStore({
     return {
       count: 0,
       isLoggedIn: false,
-      userData: {}
+      userData: {},
+      wizzardOn: false
     };
   },
   mutations: {
@@ -23,6 +24,9 @@ const store = createStore({
     },
     setUserData(state, userData) {
       state.userData = userData;
+    },
+    setWizzard(state, data) {
+      state.wizzardOn = data;
     }
   },
   actions: {

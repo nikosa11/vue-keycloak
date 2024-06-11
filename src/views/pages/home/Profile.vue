@@ -1,127 +1,180 @@
-<script setup>
+<template>
+  <div class="profile-page">
+    <div class="content">
+      <div class="content__cover">
+        <div class="content__avatar"></div>
+        <div class="content__bull"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="content__actions">
+        <a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
+            <path fill="currentColor" d="M192 256A112 112 0 1 0 80 144a111.94 111.94 0 0 0 112 112zm76.8 32h-8.3a157.53 157.53 0 0 1-68.5 16c-24.6 0-47.6-6-68.5-16h-8.3A115.23 115.23 0 0 0 0 403.2V432a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48v-28.8A115.23 115.23 0 0 0 268.8 288z"></path>
+            <path fill="currentColor" d="M480 256a96 96 0 1 0-96-96 96 96 0 0 0 96 96zm48 32h-3.8c-13.9 4.8-28.6 8-44.2 8s-30.3-3.2-44.2-8H432c-20.4 0-39.2 5.9-55.7 15.4 24.4 26.3 39.7 61.2 39.7 99.8v38.4c0 2.2-.5 4.3-.6 6.4H592a48 48 0 0 0 48-48 111.94 111.94 0 0 0-112-112z"></path>
+          </svg>
+          <span>Connect</span>
+        </a>
+        <a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
+            <path fill="currentColor" d="M208 352c-41 0-79.1-9.3-111.3-25-21.8 12.7-52.1 25-88.7 25a7.83 7.83 0 0 1-7.3-4.8 8 8 0 0 1 1.5-8.7c.3-.3 22.4-24.3 35.8-54.5-23.9-26.1-38-57.7-38-92C0 103.6 93.1 32 208 32s208 71.6 208 160-93.1 160-208 160z"></path>
+            <path fill="currentColor" d="M576 320c0 34.3-14.1 66-38 92 13.4 30.3 35.5 54.2 35.8 54.5a8 8 0 0 1 1.5 8.7 7.88 7.88 0 0 1-7.3 4.8c-36.6 0-66.9-12.3-88.7-25-32.2 15.8-70.3 25-111.3 25-86.2 0-160.2-40.4-191.7-97.9A299.82 299.82 0 0 0 208 384c132.3 0 240-86.1 240-192a148.61 148.61 0 0 0-1.3-20.1C522.5 195.8 576 253.1 576 320z"></path>
+          </svg>
+          <span>Message</span>
+        </a>
+      </div>
+      <div class="content__title">
+        <h1>{{ userData.name }}</h1><span>New York, United States</span>
+      </div>
+      <div class="content__description">
+        <p><span class="p-menuitem-icon pi pi-fw pi-envelope" data-pc-section="headericon"></span> {{ userData.email }}</p>
+        <p><span class="p-menuitem-icon pi pi-fw pi-user" data-pc-section="icon"></span> Username: {{ userData.preferred_username }}</p>
+      </div>
+      <ul class="content__list">
+        <li><span>65</span>Projects</li>
+        <li><span>43</span>News</li>
+        <li><span>21</span>Comments</li>
+      </ul>
+      <div class="content__button">
+        <a class="button" @click="changePassword">
+          <div class="button__border"></div>
+          <div class="button__bg"></div>
+          <p class="button__text"> Change Password <span class="p-menuitem-icon pi pi-fw pi-user-edit" data-pc-section="icon"></span></p>
+        </a>
+      </div>
+      <div class="content__header">
+        <h1 class="button__text">Your Plan</h1>
+      </div>
+      <div class="package-container">
+        <SubscriptionPlan 
+          :planName="currentPlan.name"
+          :price="currentPlan.price"
+          :features="currentPlan.features"
+          :planClass="currentPlan.class"
+          :showButton="false"
+        />
+      </div>
+      <div v-if="showOptions">
+        <div class="content__header">
+          <h1 class="button__text">Subscription Options</h1>
+        </div>
+        <div class="package-container">
+          <SubscriptionPlan 
+            v-for="(plan, index) in availablePlans"
+            :key="index"
+            :planName="plan.name"
+            :price="plan.price"
+            :features="plan.features"
+            :planClass="plan.class"
+            :buttonName="getButtonName(plan.price)"
+            :buttonClass="plan.buttonClass"
+            :showButton="true"
+          />
+        </div>
+      </div>
+      <div class="content__button">
+        <a class="button" @click="toggleOptions">
+          <div class="button__border"></div>
+          <div class="button__bg"></div>
+          <p class="button__text">
+            {{ showOptions ? 'View Less Options' : 'View More Options' }}
+            <span :class="showOptions ? 'pi pi-fw pi-arrow-up' : 'pi pi-fw pi-arrow-down'" data-pc-section="icon"></span>
+          </p>
+        </a>
+      </div>
+    </div>
+    <div class="bg">
+      <div><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+    <div class="theme-switcher-wrapper" id="theme-switcher-wrapper"><span>Themes color</span>
+      <ul>
+        <li><em class="is-active" data-theme="orange"></em></li>
+        <li><em data-theme="green"></em></li>
+        <li><em data-theme="purple"></em></li>
+        <li><em data-theme="blue"></em></li>
+      </ul>
+    </div>
+    <div class="theme-switcher-button" id="theme-switcher-button">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+        <path fill="currentColor" d="M352 0H32C14.33 0 0 14.33 0 32v224h384V32c0-17.67-14.33-32-32-32zM0 320c0 35.35 28.66 64 64 64h64v64c0 35.35 28.66 64 64 64s64-28.65 64-64v-64h64c35.34 0 64-28.65 64-64v-32H0v32zm192 104c13.25 0 24 10.74 24 24 0 13.25-10.75 24-24 24s-24-10.75-24-24c0-13.26 10.75-24 24-24z"></path>
+      </svg>
+    </div>
+  </div>
+</template>
+
+<script>
 import { useToast } from 'primevue/usetoast';
 import { useStore } from 'vuex';
 import { ApiService } from '@/common/apiService.js'
 import { useRouter } from 'vue-router';
+import SubscriptionPlan from '@/views/pages/home/SubscriptionPlan.vue';
 
-const store = useStore();
-const router = useRouter();
-
-const userData = store.state.userData;
-const toast = useToast();
-const apiService = new ApiService();
-  apiService.getUserInfo().then(response => {
-    store.commit('setUserData',response);
-}).catch(error => {
-    localStorage.removeItem('jwtToken');
+export default {
+  components: {
+    SubscriptionPlan
+  },
+  data() {
+    return {
+      showOptions: false,
+      userData: {},
+      availablePlans: [
+        {
+          name: "Professional",
+          price: "$239.99",
+          features: ["Basic +", "Landing Pages", "Pop-up Forms", "Premium Support"],
+          class: "professional",
+          buttonClass: "button2",
+        },
+        {
+          name: "Master",
+          price: "$359.99",
+          features: ["Professional +", "Marketing", "Instagram Ads", "Facebook Ads"],
+          class: "master",
+          buttonClass: "button3",
+        }
+      ],
+      currentPlan: {
+        name: "Basic",
+        price: "$319.99",
+        features: ["Basic +", "Landing Pages", "Pop-up Forms", "Premium Support"],
+        class: "basic",
+      }
+    };
+  },
+  methods: {
+    changePassword() {
+      this.router.push('/auth/changePassword');
+    },
+    onUpload() {
+      this.toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
+    },
+    getButtonName(price) {
+      const userPrice = parseFloat(this.currentPlan.price.replace('$', ''));
+      const planPrice = parseFloat(price.replace('$', ''));
+      return planPrice > userPrice ? 'Upgrade' : 'Downgrade';
+    },
+    toggleOptions() {
+      this.showOptions = !this.showOptions;
+    },
+    async fetchUserData() {
+      try {
+        const response = await this.apiService.getUserInfo();
+        this.$store.commit('setUserData', response);
+        this.userData = this.$store.state.userData;
+      } catch (error) {
+        localStorage.removeItem('jwtToken');
         localStorage.removeItem('jwtRefreshToken');
         localStorage.removeItem('username');
-        router.push('/');
-
-} );
-const changePassword = async () => {
-    router.push('/auth/changePassword');
-    
-};
-const onUpload = () => {
-    toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
+        this.router.push('/');
+      }
+    }
+  },
+  created() {
+    this.toast = useToast();
+    this.router = useRouter();
+    this.apiService = new ApiService();
+    this.fetchUserData();
+  }
 };
 </script>
-
-<template>
-        <div class="profile-page">
-  <div class="content">
-    <div class="content__cover">
-      <div class="content__avatar"></div>
-      <div class="content__bull"><span></span><span></span><span></span><span></span><span></span>
-      </div>
-    </div>
-    <div class="content__actions"><a href="#">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
-          <path fill="currentColor" d="M192 256A112 112 0 1 0 80 144a111.94 111.94 0 0 0 112 112zm76.8 32h-8.3a157.53 157.53 0 0 1-68.5 16c-24.6 0-47.6-6-68.5-16h-8.3A115.23 115.23 0 0 0 0 403.2V432a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48v-28.8A115.23 115.23 0 0 0 268.8 288z"></path>
-          <path fill="currentColor" d="M480 256a96 96 0 1 0-96-96 96 96 0 0 0 96 96zm48 32h-3.8c-13.9 4.8-28.6 8-44.2 8s-30.3-3.2-44.2-8H432c-20.4 0-39.2 5.9-55.7 15.4 24.4 26.3 39.7 61.2 39.7 99.8v38.4c0 2.2-.5 4.3-.6 6.4H592a48 48 0 0 0 48-48 111.94 111.94 0 0 0-112-112z"></path>
-        </svg><span>Connect</span></a><a href="#">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
-          <path fill="currentColor" d="M208 352c-41 0-79.1-9.3-111.3-25-21.8 12.7-52.1 25-88.7 25a7.83 7.83 0 0 1-7.3-4.8 8 8 0 0 1 1.5-8.7c.3-.3 22.4-24.3 35.8-54.5-23.9-26.1-38-57.7-38-92C0 103.6 93.1 32 208 32s208 71.6 208 160-93.1 160-208 160z"></path>
-          <path fill="currentColor" d="M576 320c0 34.3-14.1 66-38 92 13.4 30.3 35.5 54.2 35.8 54.5a8 8 0 0 1 1.5 8.7 7.88 7.88 0 0 1-7.3 4.8c-36.6 0-66.9-12.3-88.7-25-32.2 15.8-70.3 25-111.3 25-86.2 0-160.2-40.4-191.7-97.9A299.82 299.82 0 0 0 208 384c132.3 0 240-86.1 240-192a148.61 148.61 0 0 0-1.3-20.1C522.5 195.8 576 253.1 576 320z"></path>
-        </svg><span>Message</span></a></div>
-    <div class="content__title">
-      <h1>{{ userData.name }}</h1><span>New York, United States</span>
-    </div>
-    <div class="content__description">
-        
-      <p><span class="p-menuitem-icon pi pi-fw pi-envelope" data-pc-section="headericon"></span>  {{ userData.email }}</p>
-      <p><span class="p-menuitem-icon pi pi-fw pi-user" data-pc-section="icon"></span> Username: {{ userData.preferred_username }}</p>
-    </div>
-    <ul class="content__list">
-      <li><span>65</span>Projects</li>
-      <li><span>43</span>News</li>
-      <li><span>21</span>Comments</li>
-    </ul>
-    <div class="content__button"><a class="button"  @click="changePassword" href="#">
-        <div class="button__border"></div>
-        <div class="button__bg"></div>
-        <p class="button__text" > Change Password      <span class="p-menuitem-icon pi pi-fw pi-user-edit" data-pc-section="icon"></span></p> </a>
-        
-    </div>
-   
-
-    <div class="content__header">
-        <h1 class="button__text">Subscription Options</h1>
-        
-    </div>
-
-
-    <div class="package-container">
-        <div class="packages profesional">
-        <h1>Professional</h1>
-        <h2 class="text2">&dollar;239.99</h2>
-        <ul class="list">
-          <li class="first">Basic +</li>
-          <li>Landing Pages</li>
-          <li>Pop-up Forms</li>
-          <li>Premium Support</li>
-        </ul>
-        <a href="#" class="button button2">Start Now</a>
-      </div>
-            <div class="packages master">
-        <h1>Master</h1>
-        <h2 class="text1" style="display: none;">$29.99</h2>
-        <h2 class="text2" style="display: block;">$359.99</h2>
-        <ul class="list">
-          <li class="first">Professional +</li>
-          <li>Marketing </li>
-          <li>Instagram Ads</li>
-          <li>Facebook Ads</li>
-        </ul>
-        <a href="#" class="button button3">Start Now</a>
-      </div>
-     
-        </div>
-  </div>
-
- 
-        
-  <div class="bg">
-    <div><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-    </div>
-  </div>
-  <div class="theme-switcher-wrapper" id="theme-switcher-wrapper"><span>Themes color</span>
-    <ul>
-      <li><em class="is-active" data-theme="orange"></em></li>
-      <li><em data-theme="green"></em></li>
-      <li><em data-theme="purple"></em></li>
-      <li><em data-theme="blue"></em></li>
-    </ul>
-  </div>
-  <div class="theme-switcher-button" id="theme-switcher-button">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-      <path fill="currentColor" d="M352 0H32C14.33 0 0 14.33 0 32v224h384V32c0-17.67-14.33-32-32-32zM0 320c0 35.35 28.66 64 64 64h64v64c0 35.35 28.66 64 64 64s64-28.65 64-64v-64h64c35.34 0 64-28.65 64-64v-32H0v32zm192 104c13.25 0 24 10.74 24 24 0 13.25-10.75 24-24 24s-24-10.75-24-24c0-13.26 10.75-24 24-24z"></path>
-    </svg>
-  </div>
-</div>       
-     
-</template>
 <style scoped>
 /* Προσαρμόστε τον CSS σύμφωνα με τις ανάγκες σας */
 
@@ -136,16 +189,19 @@ body {
   font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   color: rgba(0,0,0,0.6);
 }
+
 .profile-page {
   display: flex;
   min-height: 100vh;
   padding-top: 5rem;
 }
+
 @media (max-width: 990px) {
   .profile-page {
     padding-top: 0;
   }
 }
+
 .profile-page .content {
   display: flex;
   flex-direction: column;
@@ -159,6 +215,7 @@ body {
   border-radius: 2rem;
   box-shadow: 0 15px 35px rgba(50,50,93,0.1), 0 5px 15px rgba(0,0,0,0.07);
 }
+
 @media (max-width: 990px) {
   .profile-page .content {
     max-width: 420px;
@@ -166,98 +223,101 @@ body {
     border-radius: 0;
   }
 }
+
 .profile-page .content__cover {
   position: relative;
   background: linear-gradient(150deg, #1d8cf8 20%, #3358f4 100%);
 }
+
 .theme-orange .profile-page .content__cover {
   background: linear-gradient(150deg, #ff4086 20%, #fd8d76 100%);
 }
+
 .theme-purple .profile-page .content__cover {
   background: linear-gradient(150deg, #8700ff 20%, #f000ff 100%);
 }
+
 .theme-green .profile-page .content__cover {
   background: linear-gradient(150deg, #1dcc45 20%, #42b883 100%);
 }
+
 .theme-blue .profile-page .content__cover {
   background: linear-gradient(150deg, #0098f0 20%, #00f2c3 100%);
 }
+
 .profile-page .content__bull {
   display: none;
   height: 12rem;
   position: relative;
   overflow: hidden;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__bull {
     display: block;
   }
 }
+
 .profile-page .content__bull span:nth-child(1) {
   display: block;
   position: absolute;
   z-index: 1;
   border-radius: 50%;
-}
-.profile-page .content__bull span:nth-child(2) {
-  display: block;
-  position: absolute;
-  z-index: 1;
-  border-radius: 50%;
-}
-.profile-page .content__bull span:nth-child(3) {
-  display: block;
-  position: absolute;
-  z-index: 1;
-  border-radius: 50%;
-}
-.profile-page .content__bull span:nth-child(4) {
-  display: block;
-  position: absolute;
-  z-index: 1;
-  border-radius: 50%;
-}
-.profile-page .content__bull span:nth-child(5) {
-  display: block;
-  position: absolute;
-  z-index: 1;
-  border-radius: 50%;
-}
-.profile-page .content__bull span:nth-child(1) {
   width: 5rem;
   height: 5rem;
   top: -6%;
   left: -3%;
   background: rgba(255,255,255,0.12);
 }
+
 .profile-page .content__bull span:nth-child(2) {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
   width: 8rem;
   height: 8rem;
   top: 18%;
   left: 18%;
   background: rgba(255,255,255,0.05);
 }
+
 .profile-page .content__bull span:nth-child(3) {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
   width: 3rem;
   height: 3rem;
   top: 8%;
   right: 2%;
   background: rgba(255,255,255,0.05);
 }
+
 .profile-page .content__bull span:nth-child(4) {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
   width: 6rem;
   height: 6rem;
   top: 28%;
   right: 12%;
   background: rgba(255,255,255,0.1);
 }
+
 .profile-page .content__bull span:nth-child(5) {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  border-radius: 50%;
   width: 4rem;
   height: 4rem;
   top: 70%;
   left: -6%;
   background: rgba(255,255,255,0.04);
 }
+
 .profile-page .content__avatar {
   width: 12rem;
   height: 12rem;
@@ -271,15 +331,7 @@ body {
   border-radius: 50%;
   box-shadow: 0 15px 35px rgba(50,50,93,0.1), 0 5px 15px rgba(0,0,0,0.07);
 }
-.profile-page .content__avatar::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  border-radius: 50%;
-}
+
 @media (max-width: 990px) {
   .profile-page .content__avatar {
     width: 11rem;
@@ -288,16 +340,19 @@ body {
     box-shadow: none;
   }
 }
+
 .profile-page .content__actions {
   display: flex;
   justify-content: space-between;
   padding: 0.2rem;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__actions {
     padding: 0.8rem 2rem;
   }
 }
+
 .profile-page .content__actions a {
   display: flex;
   flex-flow: row nowrap;
@@ -309,190 +364,237 @@ body {
   text-decoration: none;
   font-size: 0.9rem;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__actions a {
     padding: 0.5rem;
   }
 }
+
 @media (max-width: 990px) {
   .profile-page .content__actions a span {
     display: none;
   }
 }
+
 .profile-page .content__actions a svg {
   width: 2rem;
   margin-right: 0.4rem;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__actions a svg {
     margin: 0;
   }
 }
+
 .profile-page .content__actions a svg path:last-child {
   opacity: 0.5;
 }
+
 .profile-page .content__actions a:first-child {
   color: #ff4086;
 }
+
 .theme-orange .profile-page .content__actions a:first-child {
   color: #ff4086;
 }
+
 .theme-purple .profile-page .content__actions a:first-child {
   color: #8700ff;
 }
+
 .theme-green .profile-page .content__actions a:first-child {
   color: #1dcc45;
 }
+
 .theme-blue .profile-page .content__actions a:first-child {
   color: #0098f0;
 }
+
 .profile-page .content__actions a:last-child {
   color: #d782d9;
 }
+
 .theme-orange .profile-page .content__actions a:last-child {
   color: #fd8d76;
 }
+
 .theme-purple .profile-page .content__actions a:last-child {
   color: #f000ff;
 }
+
 .theme-green .profile-page .content__actions a:last-child {
   color: #42b883;
 }
+
 .theme-blue .profile-page .content__actions a:last-child {
   color: #00f2c3;
 }
+
 .profile-page .content__actions a:hover:first-child {
   background: #1d8cf8;
   color: #fff;
 }
+
 .theme-orange .profile-page .content__actions a:hover:first-child {
   background: #ff4086;
 }
+
 .theme-purple .profile-page .content__actions a:hover:first-child {
   background: #8700ff;
 }
+
 .theme-green .profile-page .content__actions a:hover:first-child {
   background: #1dcc45;
 }
+
 .theme-blue .profile-page .content__actions a:hover:first-child {
   background: #0098f0;
 }
+
 .profile-page .content__actions a:hover:last-child {
   background: #1d8cf8;
   color: #fff;
 }
+
 .theme-orange .profile-page .content__actions a:hover:last-child {
   background: #fd8d76;
 }
+
 .theme-purple .profile-page .content__actions a:hover:last-child {
   background: #f000ff;
 }
+
 .theme-green .profile-page .content__actions a:hover:last-child {
   background: #42b883;
 }
+
 .theme-blue .profile-page .content__actions a:hover:last-child {
   background: #00f2c3;
 }
+
 .profile-page .content__title {
   margin-top: 4.5rem;
   text-align: center;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__title {
     margin-top: 1.5rem;
   }
 }
+
 .profile-page .content__title h1 {
   margin-bottom: 0.1rem;
   font-size: 2.4rem;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__title h1 {
     font-size: 1.8rem;
   }
 }
+
 .profile-page .content__title span {
   font-size: 1rem;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__title span {
     font-size: 0.9rem;
   }
 }
+
 .profile-page .content__description {
   margin-top: 2.5rem;
   text-align: center;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__description {
     margin-top: 1.5rem;
   }
 }
+
 .profile-page .content__description p {
   margin-bottom: 0.2rem;
   font-size: 1.2rem;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__description p {
     font-size: 1rem;
   }
 }
+
 .profile-page .content__list {
   display: flex;
   justify-content: center;
   margin-top: 2rem;
   list-style-type: none;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__list {
     margin-top: 1.5rem;
   }
 }
+
 .profile-page .content__list li {
   padding: 0 1.5rem;
   text-align: center;
   font-size: 1rem;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__list li {
     font-size: 0.8rem;
   }
 }
+
 .profile-page .content__list li span {
   display: block;
   margin-bottom: 0.1rem;
   font-weight: bold;
   font-size: 1.6rem;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__list li span {
     font-size: 1.2rem;
   }
 }
+
 .profile-page .content__header {
   margin: 3rem 0 0rem;
   border-radius: 17px;
   text-align: center;
   padding: 20px;
 }
+
 .profile-page .content__header h1 {
-    color: rgb(0, 0, 0);
+  color: rgb(0, 0, 0);
 }
+
 @media (max-width: 990px) {
   .profile-page .content__header {
     margin: 1.5rem 0 2.2rem;
   }
 }
+
 .profile-page .content__button {
   margin: 3rem 0 2rem;
   border-radius: 17px;
   text-align: center;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__button {
     margin: 1.5rem 0 2.2rem;
   }
 }
+
 .profile-page .content__button .button {
   display: inline-block;
   padding: 1.2rem 12rem;
@@ -505,27 +607,34 @@ body {
   color: #fff;
   cursor: pointer;
 }
+
 .theme-orange .profile-page .content__button .button {
   background: linear-gradient(100deg, #ff4086 10%, #fd8d76 100%);
 }
+
 .theme-purple .profile-page .content__button .button {
   background: linear-gradient(100deg, #8700ff 10%, #f000ff 100%);
 }
+
 .theme-green .profile-page .content__button .button {
   background: linear-gradient(100deg, #1dcc45 10%, #42b883 100%);
 }
+
 .theme-blue .profile-page .content__button .button {
   background: linear-gradient(100deg, #0098f0 10%, #00f2c3 100%);
 }
+
 .profile-page .content__button .button:hover {
   color: #fff;
 }
+
 @media (max-width: 990px) {
   .profile-page .content__button .button {
     padding: 1rem 1.4rem;
     font-size: 0.9rem;
   }
 }
+
 .profile-page .bg {
   width: 100%;
   height: 50%;
@@ -534,6 +643,7 @@ body {
   left: 0;
   z-index: 1;
 }
+
 .profile-page .bg div {
   content: "";
   width: 100%;
@@ -545,67 +655,31 @@ body {
   overflow: hidden;
   background: linear-gradient(150deg, #1d8cf8 20%, #3358f4 100%);
 }
+
 .theme-orange .profile-page .bg div {
   background: linear-gradient(150deg, #ff4086 20%, #fd8d76 100%);
 }
+
 .theme-purple .profile-page .bg div {
   background: linear-gradient(150deg, #8700ff 20%, #f000ff 100%);
 }
+
 .theme-green .profile-page .bg div {
   background: linear-gradient(150deg, #1dcc45 20%, #42b883 100%);
 }
+
 .theme-blue .profile-page .bg div {
   background: linear-gradient(150deg, #0098f0 20%, #00f2c3 100%);
 }
-.profile-page .bg span:nth-child(1) {
+
+.profile-page .bg span {
   display: block;
   position: absolute;
   z-index: 2;
   border-radius: 50%;
   animation: floating 34s infinite;
 }
-.profile-page .bg span:nth-child(2) {
-  display: block;
-  position: absolute;
-  z-index: 2;
-  border-radius: 50%;
-  animation: floating 34s infinite;
-}
-.profile-page .bg span:nth-child(3) {
-  display: block;
-  position: absolute;
-  z-index: 2;
-  border-radius: 50%;
-  animation: floating 34s infinite;
-}
-.profile-page .bg span:nth-child(4) {
-  display: block;
-  position: absolute;
-  z-index: 2;
-  border-radius: 50%;
-  animation: floating 34s infinite;
-}
-.profile-page .bg span:nth-child(5) {
-  display: block;
-  position: absolute;
-  z-index: 2;
-  border-radius: 50%;
-  animation: floating 34s infinite;
-}
-.profile-page .bg span:nth-child(6) {
-  display: block;
-  position: absolute;
-  z-index: 2;
-  border-radius: 50%;
-  animation: floating 34s infinite;
-}
-.profile-page .bg span:nth-child(7) {
-  display: block;
-  position: absolute;
-  z-index: 2;
-  border-radius: 50%;
-  animation: floating 34s infinite;
-}
+
 .profile-page .bg span:nth-child(1) {
   width: 11rem;
   height: 11rem;
@@ -614,6 +688,7 @@ body {
   background: rgba(255,255,255,0.05);
   animation-duration: 34s;
 }
+
 .profile-page .bg span:nth-child(2) {
   width: 8rem;
   height: 8rem;
@@ -622,6 +697,7 @@ body {
   background: rgba(255,255,255,0.12);
   animation-duration: 40s;
 }
+
 .profile-page .bg span:nth-child(3) {
   width: 8rem;
   height: 8rem;
@@ -630,6 +706,7 @@ body {
   background: rgba(255,255,255,0.1);
   animation-duration: 38s;
 }
+
 .profile-page .bg span:nth-child(4) {
   width: 4rem;
   height: 4rem;
@@ -638,6 +715,7 @@ body {
   background: rgba(255,255,255,0.2);
   animation-duration: 34s;
 }
+
 .profile-page .bg span:nth-child(5) {
   width: 12rem;
   height: 12rem;
@@ -646,6 +724,7 @@ body {
   background: rgba(255,255,255,0.1);
   animation-duration: 40s;
 }
+
 .profile-page .bg span:nth-child(6) {
   width: 8rem;
   height: 8rem;
@@ -654,6 +733,7 @@ body {
   background: rgba(255,255,255,0.05);
   animation-duration: 38s;
 }
+
 .profile-page .bg span:nth-child(7) {
   width: 4rem;
   height: 4rem;
@@ -662,6 +742,7 @@ body {
   background: rgba(255,255,255,0.05);
   animation-duration: 34s;
 }
+
 .theme-switcher-button {
   position: fixed;
   top: calc(50% - 3.6rem);
@@ -675,21 +756,27 @@ body {
   color: #fd7686;
   cursor: pointer;
 }
+
 .theme-orange .theme-switcher-button {
   color: #fd7686;
 }
+
 .theme-purple .theme-switcher-button {
   color: #80f;
 }
+
 .theme-green .theme-switcher-button {
   color: #42b883;
 }
+
 .theme-blue .theme-switcher-button {
   color: #1d8cf8;
 }
+
 .theme-switcher-button svg {
   width: 1.1rem;
 }
+
 .theme-switcher-wrapper {
   width: 200px;
   position: fixed;
@@ -709,22 +796,26 @@ body {
   transform-origin: 0 0;
   transition: transform 0.15s cubic-bezier(0.43, 0.195, 0.02, 1);
 }
+
 .theme-switcher-wrapper.is-open {
   opacity: 1;
   visibility: visible;
   transform: translate3d(0, 1px, 0);
 }
+
 .theme-switcher-wrapper span {
   display: block;
   font-size: 0.8rem;
   color: rgba(255,255,255,0.9);
   cursor: default;
 }
+
 .theme-switcher-wrapper ul {
   margin-top: 0.8rem;
   list-style-type: none;
   font-size: 0;
 }
+
 .theme-switcher-wrapper li {
   display: inline-block;
   vertical-align: middle;
@@ -733,26 +824,33 @@ body {
   color: rgba(255,255,255,0.9);
   cursor: pointer;
 }
+
 .theme-switcher-wrapper li em {
   display: block;
   border-radius: 1rem;
 }
+
 .theme-switcher-wrapper [data-theme] {
   width: 20px;
   height: 20px;
 }
+
 .theme-switcher-wrapper [data-theme="orange"] {
   background: #ff4086;
 }
+
 .theme-switcher-wrapper [data-theme="purple"] {
   background: #80f;
 }
+
 .theme-switcher-wrapper [data-theme="green"] {
   background: #42b883;
 }
+
 .theme-switcher-wrapper [data-theme="blue"] {
   background: #1d8cf8;
 }
+
 @-moz-keyframes floating {
   0% {
     -webkit-transform: rotate(0deg) translate(-10px) rotate(0deg);
@@ -763,6 +861,7 @@ body {
     transform: rotate(360deg) translate(-10px) rotate(-360deg);
   }
 }
+
 @-webkit-keyframes floating {
   0% {
     -webkit-transform: rotate(0deg) translate(-10px) rotate(0deg);
@@ -773,6 +872,7 @@ body {
     transform: rotate(360deg) translate(-10px) rotate(-360deg);
   }
 }
+
 @-o-keyframes floating {
   0% {
     -webkit-transform: rotate(0deg) translate(-10px) rotate(0deg);
@@ -783,6 +883,7 @@ body {
     transform: rotate(360deg) translate(-10px) rotate(-360deg);
   }
 }
+
 @keyframes floating {
   0% {
     -webkit-transform: rotate(0deg) translate(-10px) rotate(0deg);
@@ -794,223 +895,11 @@ body {
   }
 }
 
-
-
-
-
-.container {
-  width: 100%;
-}
-
-.packages {
-  padding: 20px 10px;
-  margin: 20px;
-  width: 300px;
-  padding-bottom: 1.5em;
-  height: 100%;
-  background-color: #c5b0e3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  border-radius: 20px;
-  box-shadow: 0 19px 38px rgba(30, 35, 33, 1), 0 15px 12px rgba(30, 35, 33, 0.2);
-  flex-wrap: wrap;
-  color: #f4f4f4;
-
-}
-.master{
-  padding-bottom: 1.5em;
-  height: 100%;
-  background-color: #545c8b;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  border-radius: 20px;
-  box-shadow: 0 19px 38px rgba(30, 35, 33, 1), 0 15px 12px rgba(30, 35, 33, 0.2);
- 
-
-}
-.master h1 {
-    color: #ffffff;
-
-}
-
-.master .text2 {
-    
-    color: #ff9a7c;
-
-}
-.profesional h1 {
-    color: #ffffff;
-
-}
-
-.profesional .text2 {
-    
-    color: #70eb6e;
-
-}
- .profesional{
-  padding: 20px 10px;
-  margin: 20px;
-  width: 300px;
-  padding-bottom: 1.5em;
-  height: 100%;
-  background-color: #7e7a83e3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  border-radius: 20px;
-  box-shadow: 0 19px 38px rgba(30, 35, 33, 1), 0 15px 12px rgba(30, 35, 33, 0.2);
-  flex-wrap: wrap;
-  color: #f4f4f4;
-
-}
-
-h1,
-h2 {
-  font-size: 2.2em;
-}
-
-.list li {
-  font-size: 20px;
-  list-style: none;
-  border-bottom: 1px solid #f4f4f4;
-  padding-inline-start: 0;
-  border-width: 1px;
-  padding: 10px;
-}
-
-.first {
-  margin-top: 40px;
-  border-top: 1px solid #f4f4f4;
-}
-
-.list {
-  width: 80%;
-}
-
-ol,
-ul {
-  padding: 0;
-}
-
-.top {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-input,
-label {
-  display: inline-block;
-  vertical-align: middle;
-  margin: 10px 0;
-}
-
-.button {
-  padding: 10px 30px;
-  text-decoration: none;
-  font-size: 1.4em;
-  margin: 15px 15px;
-  border-radius: 50px;
-  color: #f4f4f4;
-  transition: all 0.3s ease 0s;
-}
-
-.button:hover {
-  transform: scale(1.2);
-}
-
-.button1 {
-  background-color: #00cc99;
-}
-
-.button2 {
-  background-color: #27c751;
-}
-
-.button3 {
-  background-color: #e76640;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #1e2321;
-  -webkit-transition: 0.4s;
-
-  box-shadow: 2px 6px 25px #1e2321;
-  transform: translate(0px, 0px);
-  transition: 0.6s ease transform, 0.6s box-shadow;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-}
-
-input:checked + .slider {
-  background-color: #50bfe6;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #50bfe6;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
 .profile-page .package-container {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  order: 5;
+  margin-top: 20px;
 }
-
-.header {
-    text-align: center;
-    font-size: xx-large;
-    margin: 25px 0px;
-}
-
 </style>

@@ -155,6 +155,7 @@
 
                     const userInfo = await apiService.getUserInfo();
                     this.$store.commit('setUserData', userInfo);
+                    this.$store.commit('setWizzard', true);
 
                     this.$router.push('/');
                 }

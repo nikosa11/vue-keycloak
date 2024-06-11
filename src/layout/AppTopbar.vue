@@ -23,7 +23,7 @@ const logoUrl = computed(() => {
     return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
 });
 const profile = async () => {
-    router.push('/uikit/profile');
+    router.push('/home/profile');
     
 };
 const logOut = async () => {

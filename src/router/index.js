@@ -117,9 +117,9 @@ const router = createRouter({
                     component: () => import('@/views/uikit/MyPage.vue')
                 },
                 {
-                    path: '/uikit/profile',
+                    path: '/home/profile',
                     name: 'profile',
-                    component: () => import('@/views/uikit/Profile.vue')
+                    component: () => import('@/views/pages/home/Profile.vue')
                 },
                 {
                     path: '/blocks',

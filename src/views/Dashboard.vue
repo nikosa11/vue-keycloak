@@ -49,6 +49,8 @@ import Chart from 'primevue/chart';
 import Wizzard from '@/views/pages/modals/Wizzard.vue';
 import Button from 'primevue/button';
 import Menu from 'primevue/menu';
+import { useStore } from 'vuex';
+
 import Skeleton from 'primevue/skeleton';
 
 export default {
@@ -62,7 +64,7 @@ export default {
   data() {
     return {
       loading: true,
-      WizzardModal: true,
+      WizzardModal: false,
       products: null,
       lineData: {
         labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -243,6 +245,11 @@ export default {
       },
       { immediate: true }
     );
+    console.log(this.$store.state.wizzardOn);
+    if (this.$store.state.wizzardOn){
+      this.WizzardModal = true;
+      this.$store.commit('setWizzard', false);
+    }
     if (!this.WizzardModal) {
       setTimeout(() => {
           this.loading = false;
@@ -251,6 +258,7 @@ export default {
       }, "2000");  
 
     }
+  
   }
 };
 </script>
