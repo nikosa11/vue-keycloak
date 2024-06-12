@@ -55,11 +55,6 @@ const router = createRouter({
             name: 'register',
             component: () => import('@/views/pages/signup/Register1.vue')
         },
-        {
-            path: '/pages/notfound',
-            name: 'notfound',
-            component: () => import('@/views/pages/NotFound.vue')
-        },
 
         {
             path: '/auth/login',
