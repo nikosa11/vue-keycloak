@@ -107,9 +107,9 @@
                       <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" />
                   </div>
 
-                  <!-- <div class="field">
+                  <div class="field">
                       <label for="inventoryStatus" class="mb-3">Inventory Status</label>
-                      <Dropdown id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status">
+                      <Dropdown id="inventoryStatus" v-model="product.category" :options="statuses" optionLabel="label" placeholder="Select a Status">
                           <template #value="slotProps">
                               <div v-if="slotProps.value && slotProps.value.value">
                                   <span :class="'product-badge status-' + slotProps.value.value">{{ slotProps.value.label }}</span>
@@ -122,7 +122,7 @@
                               </span>
                           </template>
                       </Dropdown>
-                  </div> -->
+                  </div>
 
                   <!-- <div class="field">
                       <label class="mb-3">Category</label>
@@ -212,9 +212,17 @@ export default {
           filters: {},
           submitted: false,
           statuses: [
-              { label: 'INSTOCK', value: 'instock' },
-              { label: 'LOWSTOCK', value: 'lowstock' },
-              { label: 'OUTOFSTOCK', value: 'outofstock' }
+              { label: 'World', value: 'World' },
+              { label: 'Weather', value: 'Weather' },
+              { label: 'Technology', value: 'Technology' },
+              { label: 'Sports', value: 'Sports' },
+              { label: 'Science', value: 'Science' },
+              { label: 'Politics', value: 'Politics' },
+              { label: 'Health', value: 'Health' },
+              { label: 'Finance', value: 'Finance' },
+              { label: 'Entertainment', value: 'Entertainment' },
+              { label: 'Economy', value: 'Economy' },
+              { label: 'Travel', value: 'Travel' }
           ],
       }
   },
@@ -245,16 +253,30 @@ export default {
       },
       saveProduct() {
           this.submitted = true;
-          if (this.product.name && this.product.name.trim() && this.product.price) {
+          if (this.product.name && this.product.name.trim()) {
               if (this.product.id) {
                   this.product.inventoryStatus = this.product.inventoryStatus.value ? this.product.inventoryStatus.value : this.product.inventoryStatus;
                   this.products[this.findIndexById(this.product.id)] = this.product;
                   this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
               } else {
-                  this.product.id = this.createId();
-                  this.product.code = this.createId();
-                  this.product.image = 'product-placeholder.svg';
-                  this.product.inventoryStatus = this.product.inventoryStatus ? this.product.inventoryStatus.value : 'INSTOCK';
+                console.log('TESTTTTTTTT');
+                this.product.id = this.createId();
+                this.product.code = this.createId();
+                this.product.image = 'product-placeholder.svg';
+                this.product.category = this.product.category ? this.product.category.value : 'General';
+                const currentDate = new Date();
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                const hours = String(currentDate.getHours()).padStart(2, '0');
+                const minutes = String(currentDate.getMinutes()).padStart(2, '0');
+                const seconds = String(currentDate.getSeconds()).padStart(2, '0');
+
+                const customFormattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                  this.product.date = customFormattedDate;
+
+                  console.log( this.product);
+
                   this.products.push(this.product);
                   this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
               }
