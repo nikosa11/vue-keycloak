@@ -1,905 +1,330 @@
 <template>
-  <div class="profile-page">
-    <div class="content">
-      <div class="content__cover">
-        <div class="content__avatar"></div>
-        <div class="content__bull"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="grid">
+      <div class="col-12">
+          <div class="card">
+              <Toolbar class="mb-4">
+                  <template v-slot:start>
+                      <div class="my-2">
+                          <Button label="New" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
+                          <Button label="Delete" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
+                      </div>
+                  </template>
+
+                  <template v-slot:end>
+                      <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block" />
+                      <Button label="Export" icon="pi pi-upload" severity="help" @click="exportCSV($event)" />
+                  </template>
+              </Toolbar>
+
+              <DataTable
+                  ref="dt"
+                  :value="products"
+                  v-model:selection="selectedProducts"
+                  dataKey="id"
+                  :paginator="true"
+                  :rows="10"
+                  :filters="filters"
+                  paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                  :rowsPerPageOptions="[5, 10, 25]"
+                  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+              >
+                  <template #header>
+                      <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                          <h5 class="m-0">Manage Products</h5>
+                          <IconField iconPosition="left" class="block mt-2 md:mt-0">
+                              <InputIcon class="pi pi-search" />
+                              <InputText class="w-full sm:w-auto" v-model="filters['global'].value" placeholder="Search..." />
+                          </IconField>
+                      </div>
+                  </template>
+
+                  <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
+                  <Column field="code" header="Code" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                      <template #body="slotProps">
+                          <span class="p-column-title">Code</span>
+                          {{ slotProps.data.code }}
+                      </template>
+                  </Column>
+                  <Column field="date" header="Date" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                      <template #body="slotProps">
+                          <span class="p-column-title">Date</span>
+                          {{ slotProps.data.date }}
+                      </template>
+                  </Column>
+                  <Column field="name" header="Name" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                      <template #body="slotProps">
+                          <span class="p-column-title">Name</span>
+                          {{ slotProps.data.name }}
+                      </template>
+                  </Column>
+                  <!-- <Column header="Image" headerStyle="width:14%; min-width:10rem;">
+                      <template #body="slotProps">
+                          <span class="p-column-title">Image</span>
+                          <img :src="'/demo/images/product/' + slotProps.data.image" :alt="slotProps.data.image" class="shadow-2" width="100" />
+                      </template>
+                  </Column> -->
+                  <!-- <Column field="price" header="Price" :sortable="true" headerStyle="width:14%; min-width:8rem;">
+                      <template #body="slotProps">
+                          <span class="p-column-title">Price</span>
+                          {{ formatCurrency(slotProps.data.price) }}
+                      </template>
+                  </Column> -->
+                  <Column field="category" header="Category" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                      <template #body="slotProps">
+                          <span class="p-column-title">Category</span>
+                          {{ slotProps.data.category }}
+                      </template>
+                  </Column>
+                  <!-- <Column field="rating" header="Reviews" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                      <template #body="slotProps">
+                          <span class="p-column-title">Rating</span>
+                          <Rating :modelValue="slotProps.data.rating" :readonly="true" :cancel="false" />
+                      </template>
+                  </Column> -->
+                  <!-- <Column field="inventoryStatus" header="Status" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                      <template #body="slotProps">
+                          <span class="p-column-title">Status</span>
+                          <Tag :severity="getBadgeSeverity(slotProps.data.inventoryStatus)">{{ slotProps.data.inventoryStatus }}</Tag>
+                      </template>
+                  </Column> -->
+                  <Column headerStyle="min-width:10rem;">
+                      <template #body="slotProps">
+                          <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editProduct(slotProps.data)" />
+                          <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteProduct(slotProps.data)" />
+                      </template>
+                  </Column>
+              </DataTable>
+
+              <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true" class="p-fluid">
+                  <img :src="'/demo/images/product/' + product.image" :alt="product.image" v-if="product.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" />
+                  <div class="field">
+                      <label for="name">Name</label>
+                      <InputText id="name" v-model.trim="product.name" required="true" autofocus :invalid="submitted && !product.name" />
+                      <small class="p-invalid" v-if="submitted && !product.name">Name is required.</small>
+                  </div>
+                  <div class="field">
+                      <label for="description">Description</label>
+                      <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" />
+                  </div>
+
+                  <!-- <div class="field">
+                      <label for="inventoryStatus" class="mb-3">Inventory Status</label>
+                      <Dropdown id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status">
+                          <template #value="slotProps">
+                              <div v-if="slotProps.value && slotProps.value.value">
+                                  <span :class="'product-badge status-' + slotProps.value.value">{{ slotProps.value.label }}</span>
+                              </div>
+                              <div v-else-if="slotProps.value && !slotProps.value.value">
+                                  <span :class="'product-badge status-' + slotProps.value.toLowerCase()">{{ slotProps.value }}</span>
+                              </div>
+                              <span v-else>
+                                  {{ slotProps.placeholder }}
+                              </span>
+                          </template>
+                      </Dropdown>
+                  </div> -->
+
+                  <!-- <div class="field">
+                      <label class="mb-3">Category</label>
+                      <div class="formgrid grid">
+                          <div class="field-radiobutton col-6">
+                              <RadioButton id="category1" name="category" value="Accessories" v-model="product.category" />
+                              <label for="category1">Accessories</label>
+                          </div>
+                          <div class="field-radiobutton col-6">
+                              <RadioButton id="category2" name="category" value="Clothing" v-model="product.category" />
+                              <label for="category2">Clothing</label>
+                          </div>
+                          <div class="field-radiobutton col-6">
+                              <RadioButton id="category3" name="category" value="Electronics" v-model="product.category" />
+                              <label for="category3">Electronics</label>
+                          </div>
+                          <div class="field-radiobutton col-6">
+                              <RadioButton id="category4" name="category" value="Fitness" v-model="product.category" />
+                              <label for="category4">Fitness</label>
+                          </div>
+                      </div>
+                  </div> -->
+
+                  <!-- <div class="formgrid grid">
+                      <div class="field col">
+                          <label for="price">Price</label>
+                          <InputNumber id="price" v-model="product.price" mode="currency" currency="USD" locale="en-US" :invalid="submitted && !product.price" :required="true" />
+                          <small class="p-invalid" v-if="submitted && !product.price">Price is required.</small>
+                      </div>
+                      <div class="field col">
+                          <label for="quantity">Quantity</label>
+                          <InputNumber id="quantity" v-model="product.quantity" integeronly />
+                      </div>
+                  </div> -->
+                  <template #footer>
+                      <Button label="Cancel" icon="pi pi-times" text="" @click="hideDialog" />
+                      <Button label="Save" icon="pi pi-check" text="" @click="saveProduct" />
+                  </template>
+              </Dialog>
+
+              <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                  <div class="flex align-items-center justify-content-center">
+                      <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+                      <span v-if="product"
+                          >Are you sure you want to delete <b>{{ product.name }}</b
+                          >?</span
+                      >
+                  </div>
+                  <template #footer>
+                      <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
+                      <Button label="Yes" icon="pi pi-check" text @click="deleteProduct" />
+                  </template>
+              </Dialog>
+
+              <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+                  <div class="flex align-items-center justify-content-center">
+                      <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
+                      <span v-if="product">Are you sure you want to delete the selected products?</span>
+                  </div>
+                  <template #footer>
+                      <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false" />
+                      <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
+                  </template>
+              </Dialog>
+          </div>
       </div>
-      <div class="content__actions">
-        <a href="#">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
-            <path fill="currentColor" d="M192 256A112 112 0 1 0 80 144a111.94 111.94 0 0 0 112 112zm76.8 32h-8.3a157.53 157.53 0 0 1-68.5 16c-24.6 0-47.6-6-68.5-16h-8.3A115.23 115.23 0 0 0 0 403.2V432a48 48 0 0 0 48 48h288a48 48 0 0 0 48-48v-28.8A115.23 115.23 0 0 0 268.8 288z"></path>
-            <path fill="currentColor" d="M480 256a96 96 0 1 0-96-96 96 96 0 0 0 96 96zm48 32h-3.8c-13.9 4.8-28.6 8-44.2 8s-30.3-3.2-44.2-8H432c-20.4 0-39.2 5.9-55.7 15.4 24.4 26.3 39.7 61.2 39.7 99.8v38.4c0 2.2-.5 4.3-.6 6.4H592a48 48 0 0 0 48-48 111.94 111.94 0 0 0-112-112z"></path>
-          </svg>
-          <span>Connect</span>
-        </a>
-        <a href="#">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512">
-            <path fill="currentColor" d="M208 352c-41 0-79.1-9.3-111.3-25-21.8 12.7-52.1 25-88.7 25a7.83 7.83 0 0 1-7.3-4.8 8 8 0 0 1 1.5-8.7c.3-.3 22.4-24.3 35.8-54.5-23.9-26.1-38-57.7-38-92C0 103.6 93.1 32 208 32s208 71.6 208 160-93.1 160-208 160z"></path>
-            <path fill="currentColor" d="M576 320c0 34.3-14.1 66-38 92 13.4 30.3 35.5 54.2 35.8 54.5a8 8 0 0 1 1.5 8.7 7.88 7.88 0 0 1-7.3 4.8c-36.6 0-66.9-12.3-88.7-25-32.2 15.8-70.3 25-111.3 25-86.2 0-160.2-40.4-191.7-97.9A299.82 299.82 0 0 0 208 384c132.3 0 240-86.1 240-192a148.61 148.61 0 0 0-1.3-20.1C522.5 195.8 576 253.1 576 320z"></path>
-          </svg>
-          <span>Message</span>
-        </a>
-      </div>
-      <div class="content__title">
-        <h1>{{ userData.name }}</h1><span>New York, United States</span>
-      </div>
-      <div class="content__description">
-        <p><span class="p-menuitem-icon pi pi-fw pi-envelope" data-pc-section="headericon"></span> {{ userData.email }}</p>
-        <p><span class="p-menuitem-icon pi pi-fw pi-user" data-pc-section="icon"></span> Username: {{ userData.preferred_username }}</p>
-      </div>
-      <ul class="content__list">
-        <li><span>65</span>Projects</li>
-        <li><span>43</span>News</li>
-        <li><span>21</span>Comments</li>
-      </ul>
-      <div class="content__button">
-        <a class="button" @click="changePassword">
-          <div class="button__border"></div>
-          <div class="button__bg"></div>
-          <p class="button__text"> Change Password <span class="p-menuitem-icon pi pi-fw pi-user-edit" data-pc-section="icon"></span></p>
-        </a>
-      </div>
-      <div class="content__header">
-        <h1 class="button__text">Your Plan</h1>
-      </div>
-      <div class="package-container">
-        <SubscriptionPlan 
-          :planName="currentPlan.name"
-          :price="currentPlan.price"
-          :features="currentPlan.features"
-          :planClass="currentPlan.class"
-          :showButton="false"
-        />
-      </div>
-      <div v-if="showOptions">
-        <div class="content__header">
-          <h1 class="button__text">Subscription Options</h1>
-        </div>
-        <div class="package-container">
-          <SubscriptionPlan 
-            v-for="(plan, index) in availablePlans"
-            :key="index"
-            :planName="plan.name"
-            :price="plan.price"
-            :features="plan.features"
-            :planClass="plan.class"
-            :buttonName="getButtonName(plan.price)"
-            :buttonClass="plan.buttonClass"
-            :showButton="true"
-          />
-        </div>
-      </div>
-      <div class="content__button">
-        <a class="button" @click="toggleOptions">
-          <div class="button__border"></div>
-          <div class="button__bg"></div>
-          <p class="button__text">
-            {{ showOptions ? 'View Less Options' : 'View More Options' }}
-            <span :class="showOptions ? 'pi pi-fw pi-arrow-up' : 'pi pi-fw pi-arrow-down'" data-pc-section="icon"></span>
-          </p>
-        </a>
-      </div>
-    </div>
-    <div class="bg">
-      <div><span></span><span></span><span></span><span></span><span></span><span></span></div>
-    </div>
-    <div class="theme-switcher-wrapper" id="theme-switcher-wrapper"><span>Themes color</span>
-      <ul>
-        <li><em class="is-active" data-theme="orange"></em></li>
-        <li><em data-theme="green"></em></li>
-        <li><em data-theme="purple"></em></li>
-        <li><em data-theme="blue"></em></li>
-      </ul>
-    </div>
-    <div class="theme-switcher-button" id="theme-switcher-button">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
-        <path fill="currentColor" d="M352 0H32C14.33 0 0 14.33 0 32v224h384V32c0-17.67-14.33-32-32-32zM0 320c0 35.35 28.66 64 64 64h64v64c0 35.35 28.66 64 64 64s64-28.65 64-64v-64h64c35.34 0 64-28.65 64-64v-32H0v32zm192 104c13.25 0 24 10.74 24 24 0 13.25-10.75 24-24 24s-24-10.75-24-24c0-13.26 10.75-24 24-24z"></path>
-      </svg>
-    </div>
   </div>
 </template>
 
 <script>
+import { FilterMatchMode } from 'primevue/api';
+import { ref, onMounted, onBeforeMount } from 'vue';
+import { ProductService } from '@/service/ProductService';
 import { useToast } from 'primevue/usetoast';
-import { useStore } from 'vuex';
-import { ApiService } from '@/common/apiService.js'
-import { useRouter } from 'vue-router';
-import SubscriptionPlan from '@/views/pages/home/SubscriptionPlan.vue';
 
 export default {
-  components: {
-    SubscriptionPlan
-  },
   data() {
-    return {
-      showOptions: false,
-      userData: {},
-      availablePlans: [
-        {
-          name: "Professional",
-          price: "$239.99",
-          features: ["Basic +", "Landing Pages", "Pop-up Forms", "Premium Support"],
-          class: "professional",
-          buttonClass: "button2",
-        },
-        {
-          name: "Master",
-          price: "$359.99",
-          features: ["Professional +", "Marketing", "Instagram Ads", "Facebook Ads"],
-          class: "master",
-          buttonClass: "button3",
-        }
-      ],
-      currentPlan: {
-        name: "Basic",
-        price: "$319.99",
-        features: ["Basic +", "Landing Pages", "Pop-up Forms", "Premium Support"],
-        class: "basic",
+      return {
+          toast: useToast(),
+          products: null,
+          productDialog: false,
+          deleteProductDialog: false,
+          deleteProductsDialog: false,
+          product: {},
+          selectedProducts: null,
+          dt: null,
+          filters: {},
+          submitted: false,
+          statuses: [
+              { label: 'INSTOCK', value: 'instock' },
+              { label: 'LOWSTOCK', value: 'lowstock' },
+              { label: 'OUTOFSTOCK', value: 'outofstock' }
+          ],
       }
-    };
   },
   methods: {
-    changePassword() {
-      this.router.push('/auth/changePassword');
-    },
-    onUpload() {
-      this.toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
-    },
-    getButtonName(price) {
-      const userPrice = parseFloat(this.currentPlan.price.replace('$', ''));
-      const planPrice = parseFloat(price.replace('$', ''));
-      return planPrice > userPrice ? 'Upgrade' : 'Downgrade';
-    },
-    toggleOptions() {
-      this.showOptions = !this.showOptions;
-    },
-    async fetchUserData() {
-      try {
-        const response = await this.apiService.getUserInfo();
-        this.$store.commit('setUserData', response);
-        this.userData = this.$store.state.userData;
-      } catch (error) {
-        localStorage.removeItem('jwtToken');
-        localStorage.removeItem('jwtRefreshToken');
-        localStorage.removeItem('username');
-        this.router.push('/');
-      }
-    }
+      getBadgeSeverity(inventoryStatus) {
+          switch (inventoryStatus.toLowerCase()) {
+              case 'instock':
+                  return 'success';
+              case 'lowstock':
+                  return 'warning';
+              case 'outofstock':
+                  return 'danger';
+              default:
+                  return 'info';
+          }
+      },
+      formatCurrency(value) {
+          return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+      },
+      openNew() {
+          this.product = {};
+          this.submitted = false;
+          this.productDialog = true;
+      },
+      hideDialog() {
+          this.productDialog = false;
+          this.submitted = false;
+      },
+      saveProduct() {
+          this.submitted = true;
+          if (this.product.name && this.product.name.trim() && this.product.price) {
+              if (this.product.id) {
+                  this.product.inventoryStatus = this.product.inventoryStatus.value ? this.product.inventoryStatus.value : this.product.inventoryStatus;
+                  this.products[this.findIndexById(this.product.id)] = this.product;
+                  this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
+              } else {
+                  this.product.id = this.createId();
+                  this.product.code = this.createId();
+                  this.product.image = 'product-placeholder.svg';
+                  this.product.inventoryStatus = this.product.inventoryStatus ? this.product.inventoryStatus.value : 'INSTOCK';
+                  this.products.push(this.product);
+                  this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
+              }
+              this.productDialog = false;
+              this.product = {};
+          }
+      },
+      editProduct(editProduct) {
+          this.product = { ...editProduct };
+          this.productDialog = true;
+      },
+      confirmDeleteProduct(editProduct) {
+          this.product = editProduct;
+          this.deleteProductDialog = true;
+      },
+      deleteProduct() {
+          this.products = this.products.filter((val) => val.id !== this.product.id);
+          this.deleteProductDialog = false;
+          this.product = {};
+          this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+      },
+      findIndexById(id) {
+          let index = -1;
+          for (let i = 0; i < this.products.length; i++) {
+              if (this.products[i].id === id) {
+                  index = i;
+                  break;
+              }
+          }
+          return index;
+      },
+      createId() {
+          let id = '';
+          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+          for (let i = 0; i < 5; i++) {
+              id += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          return id;
+      },
+      exportCSV() {
+          this.dt.exportCSV();
+      },
+      confirmDeleteSelected() {
+          this.deleteProductsDialog = true;
+      },
+      deleteSelectedProducts() {
+          this.products = this.products.filter((val) => !this.selectedProducts.includes(val));
+          this.deleteProductsDialog = false;
+          this.selectedProducts = null;
+          this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
+      },
+      initFilters() {
+          this.filters = {
+              global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+          };
+      },
   },
-  created() {
-    this.toast = useToast();
-    this.router = useRouter();
-    this.apiService = new ApiService();
-    this.fetchUserData();
-  }
+  beforeMount() {
+      this.initFilters();
+  },
+  mounted() {
+      const productService = new ProductService();
+      productService.getProducts().then((data) => (
+        this.products = data));
+  },
 };
 </script>
-<style scoped>
-/* Προσαρμόστε τον CSS σύμφωνα με τις ανάγκες σας */
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background: #fff;
-  font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  color: rgba(0,0,0,0.6);
-}
-
-.profile-page {
-  display: flex;
-  min-height: 100vh;
-  padding-top: 5rem;
-}
-
-@media (max-width: 990px) {
-  .profile-page {
-    padding-top: 0;
-  }
-}
-
-.profile-page .content {
-  display: flex;
-  flex-direction: column;
-  max-width: 800px;
-  width: 100%;
-  position: relative;
-  z-index: 2;
-  margin: auto;
-  padding: 2rem;
-  background: #fff;
-  border-radius: 2rem;
-  box-shadow: 0 15px 35px rgba(50,50,93,0.1), 0 5px 15px rgba(0,0,0,0.07);
-}
-
-@media (max-width: 990px) {
-  .profile-page .content {
-    max-width: 420px;
-    padding: 0;
-    border-radius: 0;
-  }
-}
-
-.profile-page .content__cover {
-  position: relative;
-  background: linear-gradient(150deg, #1d8cf8 20%, #3358f4 100%);
-}
-
-.theme-orange .profile-page .content__cover {
-  background: linear-gradient(150deg, #ff4086 20%, #fd8d76 100%);
-}
-
-.theme-purple .profile-page .content__cover {
-  background: linear-gradient(150deg, #8700ff 20%, #f000ff 100%);
-}
-
-.theme-green .profile-page .content__cover {
-  background: linear-gradient(150deg, #1dcc45 20%, #42b883 100%);
-}
-
-.theme-blue .profile-page .content__cover {
-  background: linear-gradient(150deg, #0098f0 20%, #00f2c3 100%);
-}
-
-.profile-page .content__bull {
-  display: none;
-  height: 12rem;
-  position: relative;
-  overflow: hidden;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__bull {
-    display: block;
-  }
-}
-
-.profile-page .content__bull span:nth-child(1) {
-  display: block;
-  position: absolute;
-  z-index: 1;
-  border-radius: 50%;
-  width: 5rem;
-  height: 5rem;
-  top: -6%;
-  left: -3%;
-  background: rgba(255,255,255,0.12);
-}
-
-.profile-page .content__bull span:nth-child(2) {
-  display: block;
-  position: absolute;
-  z-index: 1;
-  border-radius: 50%;
-  width: 8rem;
-  height: 8rem;
-  top: 18%;
-  left: 18%;
-  background: rgba(255,255,255,0.05);
-}
-
-.profile-page .content__bull span:nth-child(3) {
-  display: block;
-  position: absolute;
-  z-index: 1;
-  border-radius: 50%;
-  width: 3rem;
-  height: 3rem;
-  top: 8%;
-  right: 2%;
-  background: rgba(255,255,255,0.05);
-}
-
-.profile-page .content__bull span:nth-child(4) {
-  display: block;
-  position: absolute;
-  z-index: 1;
-  border-radius: 50%;
-  width: 6rem;
-  height: 6rem;
-  top: 28%;
-  right: 12%;
-  background: rgba(255,255,255,0.1);
-}
-
-.profile-page .content__bull span:nth-child(5) {
-  display: block;
-  position: absolute;
-  z-index: 1;
-  border-radius: 50%;
-  width: 4rem;
-  height: 4rem;
-  top: 70%;
-  left: -6%;
-  background: rgba(255,255,255,0.04);
-}
-
-.profile-page .content__avatar {
-  width: 12rem;
-  height: 12rem;
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  z-index: 2;
-  transform: translate(-50%, 50%);
-  background: #8f6ed5 url("https://image.freepik.com/free-photo/friendly-brunette-looking-camera_23-2147774849.jpg") center center no-repeat;
-  background-size: cover;
-  border-radius: 50%;
-  box-shadow: 0 15px 35px rgba(50,50,93,0.1), 0 5px 15px rgba(0,0,0,0.07);
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__avatar {
-    width: 11rem;
-    height: 11rem;
-    border: 0.3rem solid #fff;
-    box-shadow: none;
-  }
-}
-
-.profile-page .content__actions {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.2rem;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__actions {
-    padding: 0.8rem 2rem;
-  }
-}
-
-.profile-page .content__actions a {
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  justify-content: center;
-  height: 3rem;
-  padding: 0.2rem 1rem;
-  border-radius: 2rem;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__actions a {
-    padding: 0.5rem;
-  }
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__actions a span {
-    display: none;
-  }
-}
-
-.profile-page .content__actions a svg {
-  width: 2rem;
-  margin-right: 0.4rem;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__actions a svg {
-    margin: 0;
-  }
-}
-
-.profile-page .content__actions a svg path:last-child {
-  opacity: 0.5;
-}
-
-.profile-page .content__actions a:first-child {
-  color: #ff4086;
-}
-
-.theme-orange .profile-page .content__actions a:first-child {
-  color: #ff4086;
-}
-
-.theme-purple .profile-page .content__actions a:first-child {
-  color: #8700ff;
-}
-
-.theme-green .profile-page .content__actions a:first-child {
-  color: #1dcc45;
-}
-
-.theme-blue .profile-page .content__actions a:first-child {
-  color: #0098f0;
-}
-
-.profile-page .content__actions a:last-child {
-  color: #d782d9;
-}
-
-.theme-orange .profile-page .content__actions a:last-child {
-  color: #fd8d76;
-}
-
-.theme-purple .profile-page .content__actions a:last-child {
-  color: #f000ff;
-}
-
-.theme-green .profile-page .content__actions a:last-child {
-  color: #42b883;
-}
-
-.theme-blue .profile-page .content__actions a:last-child {
-  color: #00f2c3;
-}
-
-.profile-page .content__actions a:hover:first-child {
-  background: #1d8cf8;
-  color: #fff;
-}
-
-.theme-orange .profile-page .content__actions a:hover:first-child {
-  background: #ff4086;
-}
-
-.theme-purple .profile-page .content__actions a:hover:first-child {
-  background: #8700ff;
-}
-
-.theme-green .profile-page .content__actions a:hover:first-child {
-  background: #1dcc45;
-}
-
-.theme-blue .profile-page .content__actions a:hover:first-child {
-  background: #0098f0;
-}
-
-.profile-page .content__actions a:hover:last-child {
-  background: #1d8cf8;
-  color: #fff;
-}
-
-.theme-orange .profile-page .content__actions a:hover:last-child {
-  background: #fd8d76;
-}
-
-.theme-purple .profile-page .content__actions a:hover:last-child {
-  background: #f000ff;
-}
-
-.theme-green .profile-page .content__actions a:hover:last-child {
-  background: #42b883;
-}
-
-.theme-blue .profile-page .content__actions a:hover:last-child {
-  background: #00f2c3;
-}
-
-.profile-page .content__title {
-  margin-top: 4.5rem;
-  text-align: center;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__title {
-    margin-top: 1.5rem;
-  }
-}
-
-.profile-page .content__title h1 {
-  margin-bottom: 0.1rem;
-  font-size: 2.4rem;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__title h1 {
-    font-size: 1.8rem;
-  }
-}
-
-.profile-page .content__title span {
-  font-size: 1rem;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__title span {
-    font-size: 0.9rem;
-  }
-}
-
-.profile-page .content__description {
-  margin-top: 2.5rem;
-  text-align: center;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__description {
-    margin-top: 1.5rem;
-  }
-}
-
-.profile-page .content__description p {
-  margin-bottom: 0.2rem;
-  font-size: 1.2rem;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__description p {
-    font-size: 1rem;
-  }
-}
-
-.profile-page .content__list {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-  list-style-type: none;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__list {
-    margin-top: 1.5rem;
-  }
-}
-
-.profile-page .content__list li {
-  padding: 0 1.5rem;
-  text-align: center;
-  font-size: 1rem;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__list li {
-    font-size: 0.8rem;
-  }
-}
-
-.profile-page .content__list li span {
-  display: block;
-  margin-bottom: 0.1rem;
-  font-weight: bold;
-  font-size: 1.6rem;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__list li span {
-    font-size: 1.2rem;
-  }
-}
-
-.profile-page .content__header {
-  margin: 3rem 0 0rem;
-  border-radius: 17px;
-  text-align: center;
-  padding: 20px;
-}
-
-.profile-page .content__header h1 {
-  color: rgb(0, 0, 0);
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__header {
-    margin: 1.5rem 0 2.2rem;
-  }
-}
-
-.profile-page .content__button {
-  margin: 3rem 0 2rem;
-  border-radius: 17px;
-  text-align: center;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__button {
-    margin: 1.5rem 0 2.2rem;
-  }
-}
-
-.profile-page .content__button .button {
-  display: inline-block;
-  padding: 1.2rem 12rem;
-  text-align: center;
-  text-decoration: none;
-  background: linear-gradient(100deg, #1d8cf8 30%, #3358f4 100%);
-  border-radius: 2rem;
-  box-shadow: 0 4px 6px rgba(50,50,93,0.11), 0 1px 3px rgba(0,0,0,0.08);
-  font-size: 1rem;
-  color: #fff;
-  cursor: pointer;
-}
-
-.theme-orange .profile-page .content__button .button {
-  background: linear-gradient(100deg, #ff4086 10%, #fd8d76 100%);
-}
-
-.theme-purple .profile-page .content__button .button {
-  background: linear-gradient(100deg, #8700ff 10%, #f000ff 100%);
-}
-
-.theme-green .profile-page .content__button .button {
-  background: linear-gradient(100deg, #1dcc45 10%, #42b883 100%);
-}
-
-.theme-blue .profile-page .content__button .button {
-  background: linear-gradient(100deg, #0098f0 10%, #00f2c3 100%);
-}
-
-.profile-page .content__button .button:hover {
-  color: #fff;
-}
-
-@media (max-width: 990px) {
-  .profile-page .content__button .button {
-    padding: 1rem 1.4rem;
-    font-size: 0.9rem;
-  }
-}
-
-.profile-page .bg {
-  width: 100%;
-  height: 50%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
-}
-
-.profile-page .bg div {
-  content: "";
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  overflow: hidden;
-  background: linear-gradient(150deg, #1d8cf8 20%, #3358f4 100%);
-}
-
-.theme-orange .profile-page .bg div {
-  background: linear-gradient(150deg, #ff4086 20%, #fd8d76 100%);
-}
-
-.theme-purple .profile-page .bg div {
-  background: linear-gradient(150deg, #8700ff 20%, #f000ff 100%);
-}
-
-.theme-green .profile-page .bg div {
-  background: linear-gradient(150deg, #1dcc45 20%, #42b883 100%);
-}
-
-.theme-blue .profile-page .bg div {
-  background: linear-gradient(150deg, #0098f0 20%, #00f2c3 100%);
-}
-
-.profile-page .bg span {
-  display: block;
-  position: absolute;
-  z-index: 2;
-  border-radius: 50%;
-  animation: floating 34s infinite;
-}
-
-.profile-page .bg span:nth-child(1) {
-  width: 11rem;
-  height: 11rem;
-  top: 30%;
-  left: 16%;
-  background: rgba(255,255,255,0.05);
-  animation-duration: 34s;
-}
-
-.profile-page .bg span:nth-child(2) {
-  width: 8rem;
-  height: 8rem;
-  top: 18%;
-  left: 1%;
-  background: rgba(255,255,255,0.12);
-  animation-duration: 40s;
-}
-
-.profile-page .bg span:nth-child(3) {
-  width: 8rem;
-  height: 8rem;
-  top: 34%;
-  right: 10%;
-  background: rgba(255,255,255,0.1);
-  animation-duration: 38s;
-}
-
-.profile-page .bg span:nth-child(4) {
-  width: 4rem;
-  height: 4rem;
-  top: 34%;
-  right: 3%;
-  background: rgba(255,255,255,0.2);
-  animation-duration: 34s;
-}
-
-.profile-page .bg span:nth-child(5) {
-  width: 12rem;
-  height: 12rem;
-  top: 42%;
-  right: 28%;
-  background: rgba(255,255,255,0.1);
-  animation-duration: 40s;
-}
-
-.profile-page .bg span:nth-child(6) {
-  width: 8rem;
-  height: 8rem;
-  top: 72%;
-  left: 6%;
-  background: rgba(255,255,255,0.05);
-  animation-duration: 38s;
-}
-
-.profile-page .bg span:nth-child(7) {
-  width: 4rem;
-  height: 4rem;
-  top: 82%;
-  right: 8%;
-  background: rgba(255,255,255,0.05);
-  animation-duration: 34s;
-}
-
-.theme-switcher-button {
-  position: fixed;
-  top: calc(50% - 3.6rem);
-  right: 0;
-  z-index: 2;
-  padding: 1rem;
-  background: rgba(0,0,0,0.6);
-  border-top-left-radius: 1rem;
-  border-bottom-left-radius: 1rem;
-  font-size: inherit;
-  color: #fd7686;
-  cursor: pointer;
-}
-
-.theme-orange .theme-switcher-button {
-  color: #fd7686;
-}
-
-.theme-purple .theme-switcher-button {
-  color: #80f;
-}
-
-.theme-green .theme-switcher-button {
-  color: #42b883;
-}
-
-.theme-blue .theme-switcher-button {
-  color: #1d8cf8;
-}
-
-.theme-switcher-button svg {
-  width: 1.1rem;
-}
-
-.theme-switcher-wrapper {
-  width: 200px;
-  position: fixed;
-  top: calc(50% - 5rem);
-  right: 5rem;
-  z-index: 2;
-  padding: 1.5rem 0;
-  background: linear-gradient(#222a42, #1d253b);
-  box-shadow: 0 10px 50px 0 rgba(0,0,0,0.2);
-  border-radius: 0.25rem;
-  opacity: 0;
-  text-align: center;
-  font-size: 1rem;
-  color: inherit;
-  visibility: hidden;
-  transform: translateY(-15%) translateZ(0);
-  transform-origin: 0 0;
-  transition: transform 0.15s cubic-bezier(0.43, 0.195, 0.02, 1);
-}
-
-.theme-switcher-wrapper.is-open {
-  opacity: 1;
-  visibility: visible;
-  transform: translate3d(0, 1px, 0);
-}
-
-.theme-switcher-wrapper span {
-  display: block;
-  font-size: 0.8rem;
-  color: rgba(255,255,255,0.9);
-  cursor: default;
-}
-
-.theme-switcher-wrapper ul {
-  margin-top: 0.8rem;
-  list-style-type: none;
-  font-size: 0;
-}
-
-.theme-switcher-wrapper li {
-  display: inline-block;
-  vertical-align: middle;
-  padding: 0 0.2rem;
-  font-size: 0.8rem;
-  color: rgba(255,255,255,0.9);
-  cursor: pointer;
-}
-
-.theme-switcher-wrapper li em {
-  display: block;
-  border-radius: 1rem;
-}
-
-.theme-switcher-wrapper [data-theme] {
-  width: 20px;
-  height: 20px;
-}
-
-.theme-switcher-wrapper [data-theme="orange"] {
-  background: #ff4086;
-}
-
-.theme-switcher-wrapper [data-theme="purple"] {
-  background: #80f;
-}
-
-.theme-switcher-wrapper [data-theme="green"] {
-  background: #42b883;
-}
-
-.theme-switcher-wrapper [data-theme="blue"] {
-  background: #1d8cf8;
-}
-
-@-moz-keyframes floating {
-  0% {
-    -webkit-transform: rotate(0deg) translate(-10px) rotate(0deg);
-    transform: rotate(0deg) translate(-10px) rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg) translate(-10px) rotate(-360deg);
-    transform: rotate(360deg) translate(-10px) rotate(-360deg);
-  }
-}
-
-@-webkit-keyframes floating {
-  0% {
-    -webkit-transform: rotate(0deg) translate(-10px) rotate(0deg);
-    transform: rotate(0deg) translate(-10px) rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg) translate(-10px) rotate(-360deg);
-    transform: rotate(360deg) translate(-10px) rotate(-360deg);
-  }
-}
-
-@-o-keyframes floating {
-  0% {
-    -webkit-transform: rotate(0deg) translate(-10px) rotate(0deg);
-    transform: rotate(0deg) translate(-10px) rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg) translate(-10px) rotate(-360deg);
-    transform: rotate(360deg) translate(-10px) rotate(-360deg);
-  }
-}
-
-@keyframes floating {
-  0% {
-    -webkit-transform: rotate(0deg) translate(-10px) rotate(0deg);
-    transform: rotate(0deg) translate(-10px) rotate(0deg);
-  }
-  100% {
-    -webkit-transform: rotate(360deg) translate(-10px) rotate(-360deg);
-    transform: rotate(360deg) translate(-10px) rotate(-360deg);
-  }
-}
-
-.profile-page .package-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 20px;
+<style>
+.p-invalid {
+  color: #f44336;
 }
 </style>
