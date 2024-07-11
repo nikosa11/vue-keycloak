@@ -1,352 +1,346 @@
 <template>
-  <div class="grid">
-      <div class="col-12">
-          <div class="card">
-              <Toolbar class="mb-4">
-                  <template v-slot:start>
-                      <div class="my-2">
-                          <Button label="New" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
-                          <Button label="Delete" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
-                      </div>
-                  </template>
-
-                  <template v-slot:end>
-                      <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block" />
-                      <Button label="Export" icon="pi pi-upload" severity="help" @click="exportCSV($event)" />
-                  </template>
-              </Toolbar>
-
-              <DataTable
-                  ref="dt"
-                  :value="products"
-                  v-model:selection="selectedProducts"
-                  dataKey="id"
-                  :paginator="true"
-                  :rows="10"
-                  :filters="filters"
-                  paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                  :rowsPerPageOptions="[5, 10, 25]"
-                  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
-              >
-                  <template #header>
-                      <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                          <h5 class="m-0">Manage Products</h5>
-                          <IconField iconPosition="left" class="block mt-2 md:mt-0">
-                              <InputIcon class="pi pi-search" />
-                              <InputText class="w-full sm:w-auto" v-model="filters['global'].value" placeholder="Search..." />
-                          </IconField>
-                      </div>
-                  </template>
-
-                  <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                  <Column field="code" header="Code" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                      <template #body="slotProps">
-                          <span class="p-column-title">Code</span>
-                          {{ slotProps.data.code }}
-                      </template>
-                  </Column>
-                  <Column field="date" header="Date" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                      <template #body="slotProps">
-                          <span class="p-column-title">Date</span>
-                          {{ slotProps.data.date }}
-                      </template>
-                  </Column>
-                  <Column field="name" header="Name" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                      <template #body="slotProps">
-                          <span class="p-column-title">Name</span>
-                          {{ slotProps.data.name }}
-                      </template>
-                  </Column>
-                  <!-- <Column header="Image" headerStyle="width:14%; min-width:10rem;">
-                      <template #body="slotProps">
-                          <span class="p-column-title">Image</span>
-                          <img :src="'/demo/images/product/' + slotProps.data.image" :alt="slotProps.data.image" class="shadow-2" width="100" />
-                      </template>
-                  </Column> -->
-                  <!-- <Column field="price" header="Price" :sortable="true" headerStyle="width:14%; min-width:8rem;">
-                      <template #body="slotProps">
-                          <span class="p-column-title">Price</span>
-                          {{ formatCurrency(slotProps.data.price) }}
-                      </template>
-                  </Column> -->
-                  <Column field="category" header="Category" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                      <template #body="slotProps">
-                          <span class="p-column-title">Category</span>
-                          {{ slotProps.data.category }}
-                      </template>
-                  </Column>
-                  <!-- <Column field="rating" header="Reviews" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                      <template #body="slotProps">
-                          <span class="p-column-title">Rating</span>
-                          <Rating :modelValue="slotProps.data.rating" :readonly="true" :cancel="false" />
-                      </template>
-                  </Column> -->
-                  <!-- <Column field="inventoryStatus" header="Status" :sortable="true" headerStyle="width:14%; min-width:10rem;">
-                      <template #body="slotProps">
-                          <span class="p-column-title">Status</span>
-                          <Tag :severity="getBadgeSeverity(slotProps.data.inventoryStatus)">{{ slotProps.data.inventoryStatus }}</Tag>
-                      </template>
-                  </Column> -->
-                  <Column headerStyle="min-width:10rem;">
-                      <template #body="slotProps">
-                          <Button icon="pi pi-pencil" class="mr-2" severity="success" rounded @click="editProduct(slotProps.data)" />
-                          <Button icon="pi pi-trash" class="mt-2" severity="warning" rounded @click="confirmDeleteProduct(slotProps.data)" />
-                      </template>
-                  </Column>
-              </DataTable>
-
-              <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true" class="p-fluid">
-                  <img :src="'/demo/images/product/' + product.image" :alt="product.image" v-if="product.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" />
-                  <div class="field">
-                      <label for="name">Name</label>
-                      <InputText id="name" v-model.trim="product.name" required="true" autofocus :invalid="submitted && !product.name" />
-                      <small class="p-invalid" v-if="submitted && !product.name">Name is required.</small>
-                  </div>
-                  <div class="field">
-                      <label for="description">Description</label>
-                      <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" />
-                  </div>
-
-                  <div class="field">
-                      <label for="inventoryStatus" class="mb-3">Inventory Status</label>
-                      <Dropdown id="inventoryStatus" v-model="product.category" :options="statuses" optionLabel="label" placeholder="Select a Status">
-                          <template #value="slotProps">
-                              <div v-if="slotProps.value && slotProps.value.value">
-                                  <span :class="'product-badge status-' + slotProps.value.value">{{ slotProps.value.label }}</span>
-                              </div>
-                              <div v-else-if="slotProps.value && !slotProps.value.value">
-                                  <span :class="'product-badge status-' + slotProps.value.toLowerCase()">{{ slotProps.value }}</span>
-                              </div>
-                              <span v-else>
-                                  {{ slotProps.placeholder }}
-                              </span>
-                          </template>
-                      </Dropdown>
-                  </div>
-
-                  <!-- <div class="field">
-                      <label class="mb-3">Category</label>
-                      <div class="formgrid grid">
-                          <div class="field-radiobutton col-6">
-                              <RadioButton id="category1" name="category" value="Accessories" v-model="product.category" />
-                              <label for="category1">Accessories</label>
-                          </div>
-                          <div class="field-radiobutton col-6">
-                              <RadioButton id="category2" name="category" value="Clothing" v-model="product.category" />
-                              <label for="category2">Clothing</label>
-                          </div>
-                          <div class="field-radiobutton col-6">
-                              <RadioButton id="category3" name="category" value="Electronics" v-model="product.category" />
-                              <label for="category3">Electronics</label>
-                          </div>
-                          <div class="field-radiobutton col-6">
-                              <RadioButton id="category4" name="category" value="Fitness" v-model="product.category" />
-                              <label for="category4">Fitness</label>
-                          </div>
-                      </div>
-                  </div> -->
-
-                  <!-- <div class="formgrid grid">
-                      <div class="field col">
-                          <label for="price">Price</label>
-                          <InputNumber id="price" v-model="product.price" mode="currency" currency="USD" locale="en-US" :invalid="submitted && !product.price" :required="true" />
-                          <small class="p-invalid" v-if="submitted && !product.price">Price is required.</small>
-                      </div>
-                      <div class="field col">
-                          <label for="quantity">Quantity</label>
-                          <InputNumber id="quantity" v-model="product.quantity" integeronly />
-                      </div>
-                  </div> -->
-                  <template #footer>
-                      <Button label="Cancel" icon="pi pi-times" text="" @click="hideDialog" />
-                      <Button label="Save" icon="pi pi-check" text="" @click="saveProduct" />
-                  </template>
-              </Dialog>
-
-              <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-                  <div class="flex align-items-center justify-content-center">
-                      <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                      <span v-if="product"
-                          >Are you sure you want to delete <b>{{ product.name }}</b
-                          >?</span
-                      >
-                  </div>
-                  <template #footer>
-                      <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                      <Button label="Yes" icon="pi pi-check" text @click="deleteProduct" />
-                  </template>
-              </Dialog>
-
-              <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-                  <div class="flex align-items-center justify-content-center">
-                      <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                      <span v-if="product">Are you sure you want to delete the selected products?</span>
-                  </div>
-                  <template #footer>
-                      <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false" />
-                      <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
-                  </template>
-              </Dialog>
-          </div>
+  <div class="news-dashboard">
+    <div class="sidebar">
+      <div
+        v-for="(news, index) in paginatedNews"
+        :key="index"
+        class="menu-item"
+        :class="{ active: selectedNews === index + (currentPage - 1) * pageSize }"
+        @click="showNews(index + (currentPage - 1) * pageSize)"
+      >
+        {{ news.title }}
       </div>
+      <div class="paginator">
+        <button @click="prevPage" :disabled="!canPrevPage" class="paginator-button">
+          <i class="pi pi-arrow-left"></i>
+        </button>
+        <button @click="nextPage" :disabled="!canNextPage" class="paginator-button">
+          <i class="pi pi-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+    <div class="main-content">
+      <div v-for="(news, index) in newsItems" :key="index" v-show="selectedNews === index" class="news-content">
+        <div class="news-title">{{ news.title }}</div>
+        <div class="news-subtitle">{{ news.subtitle }}</div>
+        <img :src="news.image" :alt="news.title" class="news-image" />
+        <div class="news-meta">
+          <div class="news-author">By: {{ news.author }}</div>
+          <div class="news-date">Date: {{ news.date }}</div>
+          <div class="news-category">Category: {{ news.category }}</div>
+        </div>
+        <div class="news-description">{{ news.description }}</div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { FilterMatchMode } from 'primevue/api';
-import { ref, onMounted, onBeforeMount } from 'vue';
-import { ProductService } from '@/service/ProductService';
-import { useToast } from 'primevue/usetoast';
-
 export default {
   data() {
-      return {
-          toast: useToast(),
-          products: null,
-          productDialog: false,
-          deleteProductDialog: false,
-          deleteProductsDialog: false,
-          product: {},
-          selectedProducts: null,
-          dt: null,
-          filters: {},
-          submitted: false,
-          statuses: [
-              { label: 'World', value: 'World' },
-              { label: 'Weather', value: 'Weather' },
-              { label: 'Technology', value: 'Technology' },
-              { label: 'Sports', value: 'Sports' },
-              { label: 'Science', value: 'Science' },
-              { label: 'Politics', value: 'Politics' },
-              { label: 'Health', value: 'Health' },
-              { label: 'Finance', value: 'Finance' },
-              { label: 'Entertainment', value: 'Entertainment' },
-              { label: 'Economy', value: 'Economy' },
-              { label: 'Travel', value: 'Travel' }
-          ],
-      }
+    return {
+      newsItems: [
+        {
+          title: "Breaking News: Market Hits Record High",
+          subtitle: "The stock market reached an all-time high today with unprecedented growth in the tech sector...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "The stock market reached an all-time high today with unprecedented growth in the tech sector. Investors are optimistic about future growth as tech companies continue to innovate...",
+          author: "John Doe",
+          date: "2024-07-01",
+          category: "Finance"
+        },
+        {
+          title: "Sports Update: Local Team Wins Championship",
+          subtitle: "In an exciting final match, the local team secured the championship title with a last-minute goal...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "In an exciting final match, the local team secured the championship title with a last-minute goal. Fans are celebrating the victory across the city...",
+          author: "Jane Smith",
+          date: "2024-06-30",
+          category: "Sports"
+        },
+        {
+          title: "Health News: New Breakthrough in Cancer Research",
+          subtitle: "Scientists have announced a significant breakthrough in cancer research that could lead to more effective treatments...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "Scientists have announced a significant breakthrough in cancer research that could lead to more effective treatments. The discovery could revolutionize the way cancer is treated in the future...",
+          author: "Emily Brown",
+          date: "2024-06-29",
+          category: "Health"
+        },
+        {
+          title: "Technology: New Smartphone Released",
+          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
+          author: "Michael Green",
+          date: "2024-06-28",
+          category: "Technology"
+        },
+        {
+          title: "Technology: New Smartphone Released",
+          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
+          author: "Michael Green",
+          date: "2024-06-28",
+          category: "Technology"
+        },
+        {
+          title: "Technology: New Smartphone Released",
+          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
+          author: "Michael Green",
+          date: "2024-06-28",
+          category: "Technology"
+        },
+        {
+          title: "Technology: New Smartphone Released",
+          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
+          author: "Michael Green",
+          date: "2024-06-28",
+          category: "Technology"
+        },
+        {
+          title: "Technology: New Smartphone Released",
+          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
+          author: "Michael Green",
+          date: "2024-06-28",
+          category: "Technology"
+        },
+        {
+          title: "Technology: New Smartphone Released",
+          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
+          author: "Michael Green",
+          date: "2024-06-28",
+          category: "Technology"
+        },
+        {
+          title: "Technology: New Smartphone Released",
+          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
+          author: "Michael Green",
+          date: "2024-06-28",
+          category: "Technology"
+        },
+        {
+          title: "Technology: New Smartphone Released",
+          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
+          author: "Michael Green",
+          date: "2024-06-28",
+          category: "Technology"
+        },
+        {
+          title: "Entertainment: Award Show Highlights",
+          subtitle: "Last night's award show was filled with memorable moments and stunning performances. Here are the highlights...",
+          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
+          description: "Last night's award show was filled with memorable moments and stunning performances. Celebrities gathered to celebrate the best in the industry...",
+          author: "Sarah White",
+          date: "2024-06-27",
+          category: "Entertainment"
+        }
+        // Add more news items here if needed
+      ],
+      selectedNews: 0,
+      currentPage: 1,
+      pageSize: 10
+    };
+  },
+  computed: {
+    paginatedNews() {
+      const start = (this.currentPage - 1) * this.pageSize;
+      const end = this.currentPage * this.pageSize;
+      return this.newsItems.slice(start, end);
+    },
+    canPrevPage() {
+      return this.currentPage > 1;
+    },
+    canNextPage() {
+      return this.currentPage * this.pageSize < this.newsItems.length;
+    }
   },
   methods: {
-      getBadgeSeverity(inventoryStatus) {
-          switch (inventoryStatus.toLowerCase()) {
-              case 'instock':
-                  return 'success';
-              case 'lowstock':
-                  return 'warning';
-              case 'outofstock':
-                  return 'danger';
-              default:
-                  return 'info';
-          }
-      },
-      formatCurrency(value) {
-          return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-      },
-      openNew() {
-          this.product = {};
-          this.submitted = false;
-          this.productDialog = true;
-      },
-      hideDialog() {
-          this.productDialog = false;
-          this.submitted = false;
-      },
-      saveProduct() {
-          this.submitted = true;
-          if (this.product.name && this.product.name.trim()) {
-              if (this.product.id) {
-                  this.product.inventoryStatus = this.product.inventoryStatus.value ? this.product.inventoryStatus.value : this.product.inventoryStatus;
-                  this.products[this.findIndexById(this.product.id)] = this.product;
-                  this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
-              } else {
-                console.log('TESTTTTTTTT');
-                this.product.id = this.createId();
-                this.product.code = this.createId();
-                this.product.image = 'product-placeholder.svg';
-                this.product.category = this.product.category ? this.product.category.value : 'General';
-                const currentDate = new Date();
-                const year = currentDate.getFullYear();
-                const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-                const day = String(currentDate.getDate()).padStart(2, '0');
-                const hours = String(currentDate.getHours()).padStart(2, '0');
-                const minutes = String(currentDate.getMinutes()).padStart(2, '0');
-                const seconds = String(currentDate.getSeconds()).padStart(2, '0');
-
-                const customFormattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-                  this.product.date = customFormattedDate;
-
-                  console.log( this.product);
-
-                  this.products.push(this.product);
-                  this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
-              }
-              this.productDialog = false;
-              this.product = {};
-          }
-      },
-      editProduct(editProduct) {
-          this.product = { ...editProduct };
-          this.productDialog = true;
-      },
-      confirmDeleteProduct(editProduct) {
-          this.product = editProduct;
-          this.deleteProductDialog = true;
-      },
-      deleteProduct() {
-          this.products = this.products.filter((val) => val.id !== this.product.id);
-          this.deleteProductDialog = false;
-          this.product = {};
-          this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
-      },
-      findIndexById(id) {
-          let index = -1;
-          for (let i = 0; i < this.products.length; i++) {
-              if (this.products[i].id === id) {
-                  index = i;
-                  break;
-              }
-          }
-          return index;
-      },
-      createId() {
-          let id = '';
-          const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-          for (let i = 0; i < 5; i++) {
-              id += chars.charAt(Math.floor(Math.random() * chars.length));
-          }
-          return id;
-      },
-      exportCSV() {
-          this.dt.exportCSV();
-      },
-      confirmDeleteSelected() {
-          this.deleteProductsDialog = true;
-      },
-      deleteSelectedProducts() {
-          this.products = this.products.filter((val) => !this.selectedProducts.includes(val));
-          this.deleteProductsDialog = false;
-          this.selectedProducts = null;
-          this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
-      },
-      initFilters() {
-          this.filters = {
-              global: { value: null, matchMode: FilterMatchMode.CONTAINS }
-          };
-      },
-  },
-  beforeMount() {
-      this.initFilters();
-  },
-  mounted() {
-      const productService = new ProductService();
-      productService.getProducts().then((data) => (
-        this.products = data));
-  },
+    showNews(index) {
+      this.selectedNews = index;
+    },
+    nextPage() {
+      if (this.canNextPage) {
+        this.currentPage++;
+      }
+    },
+    prevPage() {
+      if (this.canPrevPage) {
+        this.currentPage--;
+      }
+    }
+  }
 };
 </script>
 
-<style>
-.p-invalid {
-  color: #f44336;
+<style scoped>
+.news-dashboard {
+  display: flex;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #f4f4f4;
+  color: #333;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 20px;
+  border-right: 1px solid #ccc;
+}
+
+.sidebar .menu-item {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.sidebar .menu-item:hover, .sidebar .menu-item.active {
+  background-color: #e0e0e0;
+  font-weight: bold;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 40px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.news-title {
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.news-subtitle {
+  font-size: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #555;
+}
+
+.news-image {
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+.news-meta {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #777;
+}
+
+.news-description {
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 1200px;
+  text-align: justify;
+  margin-top: 20px;
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .news-image,
+  .news-description,
+  .news-meta {
+    max-width: 1000px;
+  }
+}
+
+@media (max-width: 992px) {
+  .news-image,
+  .news-description,
+  .news-meta {
+    max-width: 800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .news-dashboard {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .main-content {
+    padding: 20px;
+  }
+  
+  .news-image,
+  .news-description,
+  .news-meta {
+    max-width: 100%;
+  }
+  
+  .news-title {
+    font-size: 28px;
+  }
+  
+  .news-subtitle {
+    font-size: 18px;
+  }
+  
+  .news-description {
+    font-size: 16px;
+  }
+}
+
+.paginator {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.paginator-button {
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.paginator-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.paginator-button:hover:not(:disabled) {
+  background-color: #0056b3;
 }
 </style>

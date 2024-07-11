@@ -25,7 +25,7 @@
             </div>
             <div style="overflow:auto;">
               <div style="text-align:center;">
-                <button type="button" @click="nextPrev(1)">{{ currentTab === questions.length ? 'Submit' : 'Next' }}</button>
+                <button class="button wizzard" type="button" @click="nextPrev(1)">{{ currentTab === questions.length ? 'Submit' : 'Next' }}</button>
               </div>
             </div>
             <!-- Circles which indicates the steps of the form: -->
@@ -97,7 +97,7 @@
   .modal {
     display: flex;
     position: fixed;
-    z-index: 1;
+    z-index: 1001;
     left: 0;
     top: 0;
     width: 100%;
@@ -124,7 +124,7 @@
     background-color: #ffffff;
     padding: 40px;
     width: 100%;
-    min-width: 300px;
+    min-width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -166,7 +166,7 @@
   }
   
   /* Buttons */
-  button {
+  button.wizzard {
     color: rgb(252, 230, 230);
     border: none;
     padding: 10px 20px;

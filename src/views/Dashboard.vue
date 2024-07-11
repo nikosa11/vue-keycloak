@@ -24,8 +24,23 @@
         </div>
       </div>
     </div>
-
     <div class="col-12 xl:col-6">
+      <div v-if="loading">
+        <Skeleton width="100%" height="2rem" class="mb-2"></Skeleton>
+        <Skeleton width="100%" height="15rem" class="mb-2"></Skeleton>
+        <Skeleton width="100%" height="2rem"></Skeleton>
+      </div>
+      <div v-else>
+        <div class="card">
+          <h5>Projects</h5>
+          <Crud :viewOnly="true"/>
+
+        </div>
+
+      </div>
+      
+    </div>
+    <div class="col-12 xl:col-6 xl:col-5">
       <div v-if="loading">
         <Skeleton width="100%" height="2rem" class="mb-2"></Skeleton>
         <Skeleton width="100%" height="15rem" class="mb-2"></Skeleton>
@@ -35,9 +50,16 @@
         <div class="card">
           <h5>Sales Overview</h5>
           <Chart type="line" :data="lineData" :options="lineOptions" />
+          <Chart type="line" :data="lineData" :options="lineOptions" />
+          <Chart type="line" :data="lineData" :options="lineOptions" />
+          <Chart type="line" :data="lineData" :options="lineOptions" />
+
         </div>
+
       </div>
+      
     </div>
+   
   </div>
 </template>
 
@@ -47,6 +69,9 @@ import { ProductService } from '@/service/ProductService';
 import { useLayout } from '@/layout/composables/layout';
 import Chart from 'primevue/chart';
 import Wizzard from '@/views/pages/modals/Wizzard.vue';
+import MyPage from '@/views/uikit/MyPage.vue';
+import Crud from '@/views/pages/home/Crud.vue';
+
 import Button from 'primevue/button';
 import Menu from 'primevue/menu';
 import { useStore } from 'vuex';
@@ -59,6 +84,8 @@ export default {
     Button,
     Menu,
     Skeleton,
+    Crud,
+    MyPage,
     Wizzard
   },
   data() {

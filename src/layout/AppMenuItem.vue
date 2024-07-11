@@ -1,103 +1,147 @@
-<script setup>
+<template>
+  <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActiveMenu }">
+      <div v-if="root && item.visible !== false" class="layout-menuitem-root-text">{{ item.label }}</div>
+      <a v-if="(!item.to || item.items) && item.visible !== false" :href="item.url" @click="itemClick($event, item)" :class="item.class" :target="item.target" tabindex="0">
+          <i :class="item.icon" class="layout-menuitem-icon"></i>
+          <span class="layout-menuitem-text">{{ item.label }}</span>
+          <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
+      </a>
+      <router-link v-if="item.to && !item.items && item.visible !== false" @click="itemClick($event, item)" :class="[item.class, { 'active-route': checkActiveRoute(item) }]" tabindex="0" :to="item.to">
+          <i :class="item.icon" class="layout-menuitem-icon"></i>
+          <span class="layout-menuitem-text">{{ item.label }}</span>
+          <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
+      </router-link>
+      <Transition v-if="item.items && item.visible !== false" name="layout-submenu">
+          <ul v-show="root ? true : isActiveMenu" class="layout-submenu">
+              <app-menu-item v-for="(child, i) in item.items" :key="i" :index="i" :item="child" :parent-item-key="itemKey" :root="false"></app-menu-item>
+          </ul>
+      </Transition>
+  </li>
+</template>
+
+<script>
 import { ref, onBeforeMount, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useLayout } from '@/layout/composables/layout';
 import { ApiService } from '@/common/apiService.js'
 
-const route = useRoute();
-const router = useRouter();
-const apiService = new ApiService();
+export default {
+  props: {
+      item: {
+          type: Object,
+          default: () => ({})
+      },
+      index: {
+          type: Number,
+          default: 0
+      },
+      root: {
+          type: Boolean,
+          default: true
+      },
+      parentItemKey: {
+          type: String,
+          default: null
+      }
+  },
+  data() {
+      return {
+          isActiveMenu: false,
+          itemKey: null,
+          route: useRoute(),
+          router: useRouter(),
+          apiService: new ApiService(),
+          layoutConfig: useLayout().layoutConfig,
+          layoutState: useLayout().layoutState,
+          onMenuToggle:useLayout().onMenuToggle
+      };
+  },
+  mounted() {
+    const { layoutConfig, layoutState, setActiveMenuItem, onMenuToggle } = useLayout();
 
-const { layoutConfig, layoutState, setActiveMenuItem, onMenuToggle } = useLayout();
+      this.itemKey = this.parentItemKey ? this.parentItemKey + '-' + this.index : String(this.index);
+      const activeItem = this.layoutState.activeMenuItem;
 
-const props = defineProps({
-    item: {
-        type: Object,
-        default: () => ({})
-    },
-    index: {
-        type: Number,
-        default: 0
-    },
-    root: {
-        type: Boolean,
-        default: true
-    },
-    parentItemKey: {
-        type: String,
-        default: null
-    }
-});
+      this.isActiveMenu = activeItem === this.itemKey || activeItem ? activeItem.startsWith(this.itemKey + '-') : false;
 
-const isActiveMenu = ref(false);
-const itemKey = ref(null);
+      // watch(
+      //     () => this.layoutConfig.activeMenuItem.value,
+      //     (newVal) => {
+      //         this.isActiveMenu = newVal === this.itemKey || newVal.startsWith(this.itemKey + '-');
+      //     }
+      // );
+  },
+  methods: {
+      itemClick(event, item) {
 
-onBeforeMount(() => {
-    itemKey.value = props.parentItemKey ? props.parentItemKey + '-' + props.index : String(props.index);
+          if (item.label === 'Logout') {
+              this.apiService.logoutFromKeycloak();
+              localStorage.removeItem('jwtToken');
+              localStorage.removeItem('jwtRefreshToken');
+              localStorage.removeItem('username');
+              this.router.push('/auth/login');
+          }
+          this.onMenuToggle();
 
-    const activeItem = layoutState.activeMenuItem;
+          if ((item.to || item.url) && (staticMenuMobileActive.value || overlayMenuActive.value)) {
+              this.onMenuToggle();
+          }
+          if (item.disabled) {
+              event.preventDefault();
+              return;
+          }
 
-    isActiveMenu.value = activeItem === itemKey.value || activeItem ? activeItem.startsWith(itemKey.value + '-') : false;
-});
+          const { overlayMenuActive, staticMenuMobileActive } = this.layoutState;
 
-watch(
-    () => layoutConfig.activeMenuItem.value,
-    (newVal) => {
-        isActiveMenu.value = newVal === itemKey.value || newVal.startsWith(itemKey.value + '-');
-    }
-);
-const itemClick = (event, item) => {
-    if (item.label === 'Logout') {
-        apiService.logoutFromKeycloak();
-        localStorage.removeItem('jwtToken');
-        localStorage.removeItem('jwtRefreshToken');
-        localStorage.removeItem('username');
-        router.push('/auth/login');
-    }
-    if (item.disabled) {
-        event.preventDefault();
-        return;
-    }
+         
 
-    const { overlayMenuActive, staticMenuMobileActive } = layoutState;
+          if (item.command) {
+              item.command({ originalEvent: event, item: item });
+          }
 
-    if ((item.to || item.url) && (staticMenuMobileActive.value || overlayMenuActive.value)) {
-        onMenuToggle();
-    }
+          const foundItemKey = item.items ? (this.isActiveMenu ? this.parentItemKey : this.itemKey) : this.itemKey;
 
-    if (item.command) {
-        item.command({ originalEvent: event, item: item });
-    }
+          this.setActiveMenuItem(foundItemKey);
 
-    const foundItemKey = item.items ? (isActiveMenu.value ? props.parentItemKey : itemKey) : itemKey.value;
-
-    setActiveMenuItem(foundItemKey);
-};
-
-const checkActiveRoute = (item) => {
-    return route.path === item.to;
+      },
+      checkActiveRoute(item) {
+          return this.route.path === item.to;
+      }
+  }
 };
 </script>
 
-<template>
-    <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActiveMenu }">
-        <div v-if="root && item.visible !== false" class="layout-menuitem-root-text">{{ item.label }}</div>
-        <a v-if="(!item.to || item.items) && item.visible !== false" :href="item.url" @click="itemClick($event, item, index)" :class="item.class" :target="item.target" tabindex="0">
-            <i :class="item.icon" class="layout-menuitem-icon"></i>
-            <span class="layout-menuitem-text">{{ item.label }}</span>
-            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
-        </a>
-        <router-link v-if="item.to && !item.items && item.visible !== false" @click="itemClick($event, item, index)" :class="[item.class, { 'active-route': checkActiveRoute(item) }]" tabindex="0" :to="item.to">
-            <i :class="item.icon" class="layout-menuitem-icon"></i>
-            <span class="layout-menuitem-text">{{ item.label }}</span>
-            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
-        </router-link>
-        <Transition v-if="item.items && item.visible !== false" name="layout-submenu">
-            <ul v-show="root ? true : isActiveMenu" class="layout-submenu">
-                <app-menu-item v-for="(child, i) in item.items" :key="child" :index="i" :item="child" :parentItemKey="itemKey" :root="false"></app-menu-item>
-            </ul>
-        </Transition>
-    </li>
-</template>
+<style lang="scss" scoped>
+.layout-root-menuitem {
+  font-weight: bold;
+  margin-top: 1rem;
+}
 
-<style lang="scss" scoped></style>
+.active-menuitem {
+  background-color: #f4f4f4;
+}
+
+.layout-menuitem-root-text {
+  padding: 1rem;
+  font-size: 1.25rem;
+}
+
+.layout-menuitem-icon {
+  margin-right: 0.5rem;
+}
+
+.layout-menuitem-text {
+  font-size: 1.3rem;
+}
+
+.layout-submenu-toggler {
+  margin-left: auto;
+}
+
+.layout-submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  padding-left: 1rem;
+}
+</style>
