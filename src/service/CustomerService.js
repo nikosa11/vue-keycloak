@@ -1,4 +1,4 @@
-export default class CustomerService {
+export  class CustomerService {
     getCustomersSmall() {
         return fetch('demo/data/customers-small.json')
             .then((res) => res.json())
@@ -12,7 +12,7 @@ export default class CustomerService {
     }
 
     getCustomersLarge() {
-        return fetch('demo/data/customers-large.json')
+        return fetch('/demo/data/customers.json', { headers: { 'Cache-Control': 'no-cache' } })
             .then((res) => res.json())
             .then((d) => d.data);
     }

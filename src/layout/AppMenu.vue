@@ -34,6 +34,8 @@ export default {
                   label: 'Home',
                   items: [{ label: 'Dashboard', icon: 'text-2xl mb-2 pi pi-fw pi-home', to: '/' },
                   { label: 'MyPage', icon: 'text-2xl mb-2 pi pi-fw pi-circle', to: '/uikit/myPage' },
+                  { label: 'News', icon: 'text-2xl mb-2 pi pi-fw pi-circle', to: '/uikit/News' },
+                  { label: 'Influencers', icon: 'text-2xl mb-2 pi pi-fw pi-circle', to: '/home/influencers' },
                   { label: 'Create - Edit', icon: 'text-2xl mb-2 pi pi-plus', to: '/home/crud' }
 
 

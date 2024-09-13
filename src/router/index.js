@@ -19,9 +19,19 @@ const router = createRouter({
                     component: () => import('@/views/uikit/MyPage.vue')
                 },
                 {
+                    path: '/uikit/News',
+                    name: 'news',
+                    component: () => import('@/views/uikit/News.vue')
+                },
+                {
                     path: '/home/profile',
                     name: 'profile',
                     component: () => import('@/views/pages/home/Profile.vue')
+                },
+                {
+                    path: '/home/influencers',
+                    name: 'influencers',
+                    component: () => import('@/views/pages/home/Influencer.vue')
                 },
                 {
                     path: '/blocks',

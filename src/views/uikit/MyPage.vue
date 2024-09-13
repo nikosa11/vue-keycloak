@@ -1,346 +1,196 @@
 <template>
-  <div class="news-dashboard">
-    <div class="sidebar">
-      <div
-        v-for="(news, index) in paginatedNews"
-        :key="index"
-        class="menu-item"
-        :class="{ active: selectedNews === index + (currentPage - 1) * pageSize }"
-        @click="showNews(index + (currentPage - 1) * pageSize)"
-      >
-        {{ news.title }}
+  <div class="flex flex-col">
+           
+      <div class="card">
+        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                <IconField iconPosition="left" class="block mt-2 md:mt-0">
+                  <InputIcon class="pi pi-search" />
+                  <InputText class="w-full sm:w-auto"  placeholder="Search..." />
+                </IconField>
+              </div>
+          <div class="font-semibold text-xl">DataView</div>
+          <DataView :value="products" :layout="layout">
+              <template #header>
+                  <div class="flex justify-end">
+                      <SelectButton v-model="layout" :options="options" :allowEmpty="true">
+                          <template #option="{ option }">
+                              <i :class="[option === 'list' ? 'pi pi-bars' : 'pi pi-table']" />
+                          </template>
+                      </SelectButton>
+                  </div>
+              </template>
+              
+
+              <template #list="slotProps">
+                  <div class="flex flex-col">
+                      <div v-for="(item, index) in slotProps" :key="index">
+                          <div v-if="item.name" class="flex flex-col sm:flex-row sm:items-center p-6 gap-4" :class="{ 'border-t border-surface': index !== 0 }">
+                              <div class="md:w-40 relative">
+                                  <img class="block xl:block mx-auto rounded w-full img-influencer" :src="`/demo/images/influencer/${item.image}`" :alt="item.name" />
+                                  <Tag :value="item.inventoryStatus" :severity="getSeverity(item)" class="absolute dark:!bg-surface-900" style="left: 4px; top: 4px"></Tag>
+                              </div>
+                              <div class="flex flex-col md:flex-row justify-between md:items-center flex-1 gap-6 gap-6-list">
+                                  <div class="flex flex-row md:flex-col justify-between items-start gap-2">
+                                      <div class="list-name">
+                                          <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.category }}</span>
+                                          <div class="text-lg font-medium mt-2">{{ item.name }}</div>
+                                      </div>
+                                      <div class="bg-surface-100 p-1" style="border-radius: 30px">
+                                          <div
+                                              class="bg-surface-0 flex items-center gap-2 justify-center py-1 px-2"
+                                              style="
+                                                  border-radius: 30px;
+                                                  box-shadow:
+                                                      0px 1px 2px 0px rgba(0, 0, 0, 0.04),
+                                                      0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+                                              "
+                                          >
+                                              <span class="text-surface-900 font-medium text-sm">{{ item.rating }}</span>
+                                              <i class="pi pi-star-fill text-yellow-500"></i>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <div class="flex flex-col md:items-end gap-8">
+                                      <span class="text-xl font-semibold">${{ item.price }}</span>
+                                      <div class="flex flex-row-reverse md:flex-row gap-2">
+                                          <Button icon="pi pi-heart"class="heart-influencer" outlined></Button>
+                                          <Button icon="pi pi-shopping-cart" label="Buy Now" :disabled="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto md:flex-initial whitespace-nowrap button-influencer"></Button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </template>
+              <template #grid="slotProps">
+
+                  <div class="grid grid-cols-12 gap-4">
+                      <div v-for="(item, index) in slotProps" :key="index" class="col-span-12 sm:col-span-6 lg:col-span-4 p-2">
+                          <div v-if="item.name" class="p-6 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded flex flex-col">
+                              <div class="bg-surface-50 flex justify-center rounded p-4">
+                                  <div class="relative mx-auto">
+                                      <img class="rounded w-full img-influencer" :src="`/demo/images/influencer/${item.image}`" :alt="item.name" style="max-width: 300px" />
+                                      <Tag :value="item.inventoryStatus" :severity="getSeverity(item)" class="absolute dark:!bg-surface-900" style="left: 4px; top: 4px"></Tag>
+                                  </div>
+                              </div>
+                              <div class="pt-6">
+                                  <div class="flex flex-row justify-between items-start gap-2">
+                                      <div class="grib-name">
+                                          <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.category }}</span>
+                                          <div class="text-lg font-medium mt-1">{{ item.name }}</div>
+                                      </div>
+                                      <div class="bg-surface-100 p-1" style="border-radius: 30px">
+                                          <div
+                                              class="bg-surface-0 flex items-center gap-2 justify-center py-1 px-2"
+                                              style="
+                                                  border-radius: 30px;
+                                                  box-shadow:
+                                                      0px 1px 2px 0px rgba(0, 0, 0, 0.04),
+                                                      0px 1px 2px 0px rgba(0, 0, 0, 0.06);
+                                              "
+                                          >
+                                              <span class="text-surface-900 font-medium text-sm">{{ item.rating }}</span>
+                                              <i class="pi pi-star-fill text-yellow-500"></i>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <div class="flex flex-col gap-6 mt-6">
+                                      <span class="text-2xl font-semibold">${{ item.price }}</span>
+                                      <div class="flex gap-2">
+                                          <Button icon="pi pi-shopping-cart" label="Buy Now" :disabled="item.inventoryStatus === 'OUTOFSTOCK'" class="flex-auto whitespace-nowrap button-influencer"></Button>
+                                          <Button icon="pi pi-heart" class="heart-influencer" outlined></Button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </template>
+          </DataView>
+
+      
+
       </div>
-      <div class="paginator">
-        <button @click="prevPage" :disabled="!canPrevPage" class="paginator-button">
-          <i class="pi pi-arrow-left"></i>
-        </button>
-        <button @click="nextPage" :disabled="!canNextPage" class="paginator-button">
-          <i class="pi pi-arrow-right"></i>
-        </button>
-      </div>
-    </div>
-    <div class="main-content">
-      <div v-for="(news, index) in newsItems" :key="index" v-show="selectedNews === index" class="news-content">
-        <div class="news-title">{{ news.title }}</div>
-        <div class="news-subtitle">{{ news.subtitle }}</div>
-        <img :src="news.image" :alt="news.title" class="news-image" />
-        <div class="news-meta">
-          <div class="news-author">By: {{ news.author }}</div>
-          <div class="news-date">Date: {{ news.date }}</div>
-          <div class="news-category">Category: {{ news.category }}</div>
-        </div>
-        <div class="news-description">{{ news.description }}</div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
+import { ref, onMounted } from 'vue';
+import { ProductService } from '@/service/ProductService';
+
 export default {
   data() {
     return {
-      newsItems: [
-        {
-          title: "Breaking News: Market Hits Record High",
-          subtitle: "The stock market reached an all-time high today with unprecedented growth in the tech sector...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "The stock market reached an all-time high today with unprecedented growth in the tech sector. Investors are optimistic about future growth as tech companies continue to innovate...",
-          author: "John Doe",
-          date: "2024-07-01",
-          category: "Finance"
-        },
-        {
-          title: "Sports Update: Local Team Wins Championship",
-          subtitle: "In an exciting final match, the local team secured the championship title with a last-minute goal...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "In an exciting final match, the local team secured the championship title with a last-minute goal. Fans are celebrating the victory across the city...",
-          author: "Jane Smith",
-          date: "2024-06-30",
-          category: "Sports"
-        },
-        {
-          title: "Health News: New Breakthrough in Cancer Research",
-          subtitle: "Scientists have announced a significant breakthrough in cancer research that could lead to more effective treatments...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "Scientists have announced a significant breakthrough in cancer research that could lead to more effective treatments. The discovery could revolutionize the way cancer is treated in the future...",
-          author: "Emily Brown",
-          date: "2024-06-29",
-          category: "Health"
-        },
-        {
-          title: "Technology: New Smartphone Released",
-          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
-          author: "Michael Green",
-          date: "2024-06-28",
-          category: "Technology"
-        },
-        {
-          title: "Technology: New Smartphone Released",
-          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
-          author: "Michael Green",
-          date: "2024-06-28",
-          category: "Technology"
-        },
-        {
-          title: "Technology: New Smartphone Released",
-          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
-          author: "Michael Green",
-          date: "2024-06-28",
-          category: "Technology"
-        },
-        {
-          title: "Technology: New Smartphone Released",
-          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
-          author: "Michael Green",
-          date: "2024-06-28",
-          category: "Technology"
-        },
-        {
-          title: "Technology: New Smartphone Released",
-          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
-          author: "Michael Green",
-          date: "2024-06-28",
-          category: "Technology"
-        },
-        {
-          title: "Technology: New Smartphone Released",
-          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
-          author: "Michael Green",
-          date: "2024-06-28",
-          category: "Technology"
-        },
-        {
-          title: "Technology: New Smartphone Released",
-          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
-          author: "Michael Green",
-          date: "2024-06-28",
-          category: "Technology"
-        },
-        {
-          title: "Technology: New Smartphone Released",
-          subtitle: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "The latest smartphone model has been released, featuring cutting-edge technology and innovative new features. Tech enthusiasts are excited about the new possibilities...",
-          author: "Michael Green",
-          date: "2024-06-28",
-          category: "Technology"
-        },
-        {
-          title: "Entertainment: Award Show Highlights",
-          subtitle: "Last night's award show was filled with memorable moments and stunning performances. Here are the highlights...",
-          image: 'https://en.protothema.gr/wp-content/uploads/2024/07/Screenshot-2024-07-02-at-4.30.45-PM.png',
-          description: "Last night's award show was filled with memorable moments and stunning performances. Celebrities gathered to celebrate the best in the industry...",
-          author: "Sarah White",
-          date: "2024-06-27",
-          category: "Entertainment"
-        }
-        // Add more news items here if needed
-      ],
-      selectedNews: 0,
-      currentPage: 1,
-      pageSize: 10
+      products: null,
+      picklistProducts: null,
+      orderlistProducts: null,
+      options: ['list', 'grid'],
+      layout: 'grid',
+      filters: {},
+
     };
   },
-  computed: {
-    paginatedNews() {
-      const start = (this.currentPage - 1) * this.pageSize;
-      const end = this.currentPage * this.pageSize;
-      return this.newsItems.slice(start, end);
-    },
-    canPrevPage() {
-      return this.currentPage > 1;
-    },
-    canNextPage() {
-      return this.currentPage * this.pageSize < this.newsItems.length;
-    }
-  },
   methods: {
-    showNews(index) {
-      this.selectedNews = index;
-    },
-    nextPage() {
-      if (this.canNextPage) {
-        this.currentPage++;
+    getSeverity(product) {
+      switch (product.inventoryStatus) {
+        case 'INSTOCK':
+          return 'success';
+        case 'LOWSTOCK':
+          return 'warning';
+        case 'OUTOFSTOCK':
+          return 'danger';
+        default:
+          return null;
       }
     },
-    prevPage() {
-      if (this.canPrevPage) {
-        this.currentPage--;
-      }
-    }
-  }
+  },
+  mounted() {
+    const productService = new ProductService();
+    productService.getProductsSmall().then((data) => {
+      this.products = data;
+      console.log(data);
+      this.picklistProducts = [data, []];
+      console.log(this.picklistProducts);
+      this.orderlistProducts = data;
+      console.log(this.products);
+
+    });
+  },
 };
 </script>
-
 <style scoped>
-.news-dashboard {
-  display: flex;
+@media screen and (min-width: 769px) {
+  .gap-8  {
+    display: block !important;
+    margin-left: 50%;
 }
-
-.sidebar {
-  width: 250px;
-  background-color: #f4f4f4;
-  color: #333;
-  height: 100vh;
-  overflow-y: auto;
-  padding: 20px;
-  border-right: 1px solid #ccc;
-}
-
-.sidebar .menu-item {
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
-  cursor: pointer;
-}
-
-.sidebar .menu-item:hover, .sidebar .menu-item.active {
-  background-color: #e0e0e0;
-  font-weight: bold;
-}
-
-.main-content {
-  flex-grow: 1;
-  padding: 40px;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.news-title {
-  font-size: 32px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.news-subtitle {
-  font-size: 20px;
-  text-align: center;
-  margin-bottom: 20px;
-  color: #555;
-}
-
-.news-image {
-  width: 100%;
-  max-width: 1200px;
-  height: auto;
-  margin-bottom: 20px;
-  border-radius: 10px;
-}
-
-.news-meta {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 1200px;
-  margin-bottom: 20px;
-  font-size: 16px;
-  color: #777;
-}
-
-.news-description {
-  font-size: 18px;
-  line-height: 1.6;
-  max-width: 1200px;
-  text-align: justify;
-  margin-top: 20px;
-}
-
-/* Responsive Styles */
-@media (max-width: 1200px) {
-  .news-image,
-  .news-description,
-  .news-meta {
-    max-width: 1000px;
   }
+  @media screen and (max-width: 769px) {
+  .gap-8  {
+    display: block !important;
+    margin-left: 0%;
 }
-
-@media (max-width: 992px) {
-  .news-image,
-  .news-description,
-  .news-meta {
-    max-width: 800px;
   }
+.list-name {
+  width: 200px;
 }
-
-@media (max-width: 768px) {
-  .news-dashboard {
-    flex-direction: column;
-  }
-  
-  .sidebar {
-    width: 100%;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid #ccc;
-  }
-  
-  .main-content {
-    padding: 20px;
-  }
-  
-  .news-image,
-  .news-description,
-  .news-meta {
-    max-width: 100%;
-  }
-  
-  .news-title {
-    font-size: 28px;
-  }
-  
-  .news-subtitle {
-    font-size: 18px;
-  }
-  
-  .news-description {
-    font-size: 16px;
-  }
+.img-influencer {
+  width: max-content !important;
+  max-width: 300px;
 }
-
-.paginator {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
+@media screen and (min-width: 769px) {
+  .gap-6-list {
+  width: 987px;
 }
+  }
 
-.paginator-button {
-  background-color: #007bff;
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
+.button-influencer
+{
+  border-radius: 30px;
+}
+.heart-influencer
+{
   border-radius: 20px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
 
-.paginator-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.paginator-button:hover:not(:disabled) {
-  background-color: #0056b3;
 }
 </style>
