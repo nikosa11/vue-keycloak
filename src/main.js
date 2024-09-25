@@ -111,6 +111,9 @@ import 'primeicons/primeicons.css';                      // icons
 
 
 import '@/assets/styles.scss';
+import { jwtDecode } from 'jwt-decode';
+import { ApiService } from '@/common/apiService';
+
 
 const app = createApp(App);
 
@@ -218,27 +221,64 @@ app.component('TriStateCheckbox', TriStateCheckbox);
 app.component('VirtualScroller', VirtualScroller);
 
 
+
 router.beforeEach((to, from, next) => {
     const auth = computed(() => {
-        const jwtToken = localStorage.getItem('jwtToken');
-        const jwtRefreshToken = localStorage.getItem('jwtRefreshToken');
-        const username = localStorage.getItem('username');
-    
-        return !!jwtToken && !!jwtRefreshToken && !!username;
-    }); 
+      const jwtToken = localStorage.getItem('jwtToken');
+      const jwtRefreshToken = localStorage.getItem('jwtRefreshToken');
+      const username = localStorage.getItem('username');
+      
+      return !!jwtToken && !!jwtRefreshToken && !!username;
+    });
+  
+    // Έλεγχος για το action token
+    if (to.fullPath.includes('/realms/myrealm/login-actions/action-token')) {
+      const key = to.query.key;
+      if (key) {
+        try {
+          const decodedToken = jwtDecode(key);
+          const currentTime = Math.floor(Date.now() / 1000);
+          const apiService = new ApiService();
 
-       console.log(auth.value);
-    if (!auth.value && (to.path !== '/auth/login' && to.path !== '/auth/access' && to.path !== '/landing' && to.path !== '/register') ) {
-        next('/auth/login');
-    } else if  (auth.value && (to.path === '/auth/login' || to.path === '/landing' || to.path === '/register')) {
+        //   const tokenValidationResult =  apiService.introspectToken(key);
+            // if (tokenValidationResult) {
+            //     console.log('Token is valid. User info:', tokenValidationResult);
+            // } else {
+            //     console.log('Token is not valid');
+            // }
+          
 
-        next('/');
-    } else {
-        console.log(to);
 
-        next();
+          if (decodedToken.exp > currentTime) {
+            // Το token είναι ακόμα έγκυρο
+            alert(`Έγκυρο token για τον χρήστη: ${decodedToken.eml}`);
+            // Εδώ μπορείτε να κάνετε ανακατεύθυνση σε μια σελίδα επαναφοράς κωδικού
+            next(`/reset-password?id=${decodedToken.sub}`);
+            return;
+          } else {
+            // Το token έχει λήξει
+            alert('Το link επαναφοράς κωδικού έχει λήξει. Παρακαλώ ζητήστε νέο link.');
+            next('/auth/login');
+            return;
+          }
+        } catch (error) {
+          console.error('Σφάλμα κατά την αποκωδικοποίηση του token:', error);
+          alert('Μη έγκυρο link επαναφοράς κωδικού.');
+          next('/auth/login');
+          return;
+        }
+      }
     }
-});
+  
+    // Η υπόλοιπη λογική του navigation guard παραμένει ίδια
+    if (!auth.value && (to.path !== '/auth/login' && to.path !== '/auth/access' && to.path !== '/landing' && to.path !== '/register' && to.path !== '/reset-password'&& to.path !== '/forgot-password')) {
+      next('/auth/login');
+    } else if (auth.value && (to.path === '/auth/login' || to.path === '/landing' || to.path === '/register' || to.path === '/reset-password' || to.path === '/forgot-password')) {
+      next('/');
+    } else {
+      next();
+    }
+  });
 let initOps =  {
     url: 'http://127.0.0.1:8080/auth',
     realm: 'myrealm',

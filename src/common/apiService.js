@@ -400,4 +400,97 @@ export class ApiService {
     }
 
 
+	async findUserByEmail(email, accessToken) {
+		const url = `${apiurlKeycloack}admin/realms/${realm}/users?email=${encodeURIComponent(email)}`;
+	  
+		try {
+		  const response = await fetch(url, {
+			method: 'GET',
+			headers: {
+			  'Authorization': `Bearer ${accessToken}`,
+			  'Content-Type': 'application/json'
+			}
+		  });
+	  
+		  if (!response.ok) {
+			throw new Error('Failed to find user');
+		  }
+	  
+		  const users = await response.json();
+		  if (users.length > 0) {
+			return users[0].id; // Επιστρέφει το ID του πρώτου χρήστη που βρέθηκε
+		  }
+		  return null; // Αν δεν βρέθηκε χρήστης
+		} catch (error) {
+		  console.error('Error finding user:', error);
+		  throw error;
+		}
+	  }
+	  
+	  async sendResetPasswordEmail(userId, accessToken) {
+		const url = `${apiurlKeycloack}admin/realms/${realm}/users/${userId}/execute-actions-email?client_id=${clientId}`;
+	  
+		try {
+		  const response = await fetch(url, {
+			method: 'PUT',
+			headers: {
+			  'Authorization': `Bearer ${accessToken}`,
+			  'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(['UPDATE_PASSWORD'])
+		  });
+	  
+		  if (!response.ok) {
+			throw new Error('Failed to send reset password email');
+		  }
+	  
+		  return true;
+		} catch (error) {
+		  console.error('Error sending reset password email:', error);
+		  throw error;
+		}
+	  }
+
+	  async  introspectToken(token) {
+		const introspectionEndpoint = `${apiurlKeycloack}realms/${realm}/protocol/openid-connect/token/introspect`;
+		
+		const formData = new URLSearchParams();
+		formData.append('token', token);
+		formData.append('client_id', clientId);
+		formData.append('client_secret', clientSecret);
+
+	
+		try {
+			const response = await fetch(introspectionEndpoint, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					
+
+				},
+				body: formData,
+
+			});
+			console.log(response)
+	
+			if (!response.ok) {
+			}
+	
+			const data = await response.json();
+	
+			// Το 'active' field δείχνει αν το token είναι έγκυρο
+			if (data.active === true) {
+				console.log('Token is valid');
+				return true;
+			} else {
+				console.log('Token is not valid');
+				return false;
+			}
+		} catch (error) {
+			console.error('Error during token introspection:', error);
+			return false;
+		}
+	}
+
+
 }
