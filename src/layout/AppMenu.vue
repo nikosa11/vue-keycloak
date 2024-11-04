@@ -32,11 +32,11 @@ export default {
                             icon: 'text-2xl mb-2 pi pi-fw pi-home', 
                             to: '/' 
                         },
-                        { 
-                            label: 'MyPage', 
-                            icon: 'text-2xl mb-2 pi pi-fw pi-circle', 
-                            to: '/uikit/myPage' 
-                        },
+                        // { 
+                        //     label: 'MyPage', 
+                        //     icon: 'text-2xl mb-2 pi pi-fw pi-circle', 
+                        //     to: '/uikit/myPage' 
+                        // },
                         { 
                             label: 'Στατιστικά Στοιχεία', 
                             icon: 'text-2xl mb-2 pi pi-chart-line', 
