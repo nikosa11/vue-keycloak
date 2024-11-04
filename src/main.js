@@ -241,11 +241,7 @@ router.beforeEach((to, from, next) => {
           const apiService = new ApiService();
 
         //   const tokenValidationResult =  apiService.introspectToken(key);
-            // if (tokenValidationResult) {
-            //     console.log('Token is valid. User info:', tokenValidationResult);
-            // } else {
-            //     console.log('Token is not valid');
-            // }
+            
           
 
 
