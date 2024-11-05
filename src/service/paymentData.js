@@ -123,91 +123,240 @@ export const paymentMethodsData = [
     }
   ];
   
-  // Payment Types Configuration
-  export const paymentTypesConfig = [
-    { 
-      name: 'Visa', 
-      icon: 'pi pi-credit-card',
-      bgClass: 'bg-blue-100 text-blue-500'
-    },
-    { 
-      name: 'Mastercard', 
-      icon: 'pi pi-credit-card',
-      bgClass: 'bg-orange-100 text-orange-500'
-    },
-    { 
-      name: 'American Express', 
-      icon: 'pi pi-credit-card',
-      bgClass: 'bg-purple-100 text-purple-500'
-    },
-    { 
-      name: 'PayPal', 
-      icon: 'pi pi-paypal',
-      bgClass: 'bg-indigo-100 text-indigo-500'
-    }
-  ];
+  // Στατιστικά στοιχεία
+  export const monthlyStats = {
+    totalIncome: 15250.50,
+    totalExpenses: 8750.25,
+    pendingPayments: 2500.00,
+    successfulTransactions: 45,
+    failedTransactions: 3,
+    averageTransactionValue: 338.90,
+    mostUsedPaymentMethod: 'Visa',
+    recentActivityCount: 12
+  };
   
-  // Payment Status Types
-  export const paymentStatusTypes = {
-    completed: {
-      label: 'Ολοκληρώθηκε',
-      severity: 'success'
+  // Διαμορφώσεις για τύπους πληρωμών
+  export const paymentTypesConfig = {
+    visa: {
+      name: 'Visa',
+      icon: 'pi pi-credit-card',
+      bgClass: 'bg-blue-100 text-blue-500',
+      maxLimit: 10000,
+      processingFee: 0.029
     },
+    mastercard: {
+      name: 'Mastercard',
+      icon: 'pi pi-credit-card',
+      bgClass: 'bg-orange-100 text-orange-500',
+      maxLimit: 10000,
+      processingFee: 0.029
+    },
+    amex: {
+      name: 'American Express',
+      icon: 'pi pi-credit-card',
+      bgClass: 'bg-purple-100 text-purple-500',
+      maxLimit: 15000,
+      processingFee: 0.034
+    },
+    paypal: {
+      name: 'PayPal',
+      icon: 'pi pi-paypal',
+      bgClass: 'bg-indigo-100 text-indigo-500',
+      maxLimit: 5000,
+      processingFee: 0.035
+    },
+    bankTransfer: {
+      name: 'Τραπεζική Μεταφορά',
+      icon: 'pi pi-bank',
+      bgClass: 'bg-green-100 text-green-500',
+      maxLimit: 50000,
+      processingFee: 0.005
+    }
+  };
+  
+  // Καταστάσεις πληρωμών
+  export const paymentStatusTypes = {
     pending: {
       label: 'Σε Εκκρεμότητα',
-      severity: 'warning'
+      severity: 'warning',
+      icon: 'pi pi-clock',
+      allowedActions: ['cancel', 'edit', 'remind']
+    },
+    processing: {
+      label: 'Σε Επεξεργασία',
+      severity: 'info',
+      icon: 'pi pi-spin pi-spinner',
+      allowedActions: ['cancel']
+    },
+    completed: {
+      label: 'Ολοκληρώθηκε',
+      severity: 'success',
+      icon: 'pi pi-check-circle',
+      allowedActions: ['view', 'download', 'receipt']
     },
     failed: {
       label: 'Απέτυχε',
-      severity: 'danger'
+      severity: 'danger',
+      icon: 'pi pi-times-circle',
+      allowedActions: ['retry', 'edit', 'delete']
+    },
+    cancelled: {
+      label: 'Ακυρώθηκε',
+      severity: 'secondary',
+      icon: 'pi pi-ban',
+      allowedActions: ['delete', 'retry']
     },
     refunded: {
       label: 'Επιστροφή Χρημάτων',
-      severity: 'info'
+      severity: 'help',
+      icon: 'pi pi-replay',
+      allowedActions: ['view', 'download']
     }
   };
   
-  // Monthly Statistics
-  export const monthlyStats = {
-    totalIncome: 15000.00,
-    totalExpenses: 3500.00,
-    pendingPayments: 2500.00,
-    successfulTransactions: 25,
-    failedTransactions: 2,
-    mostUsedPaymentMethod: 'Visa',
-    averageTransactionValue: 750.00
-  };
-  
-  // Payment Methods Summary
-  export const paymentMethodsSummary = {
-    totalActive: 3,
-    defaultMethod: 'Visa (****4242)',
-    methodsDistribution: {
-      visa: 45,
-      mastercard: 30,
-      amex: 15,
-      paypal: 10
-    }
-  };
-  
-  // Recent Activity
-  export const recentActivityData = [
-    {
-      id: 'ACT001',
-      type: 'payment_added',
-      date: '2024-03-01T10:30:00',
-      description: 'Νέα μέθοδος πληρωμής προστέθηκε: Visa ****4242'
+  // Διαμορφώσεις για τιμολόγια
+  export const invoiceConfig = {
+    types: {
+      invoice: {
+        label: 'Τιμολόγιο',
+        prefix: 'INV',
+        requiresVAT: true,
+        allowedPaymentMethods: ['bankTransfer', 'creditCard'],
+        defaultDueDate: 30 // ημέρες
+      },
+      receipt: {
+        label: 'Απόδειξη',
+        prefix: 'RCP',
+        requiresVAT: true,
+        allowedPaymentMethods: ['all'],
+        defaultDueDate: 0
+      },
+      proforma: {
+        label: 'Προτιμολόγιο',
+        prefix: 'PRF',
+        requiresVAT: false,
+        allowedPaymentMethods: ['none'],
+        defaultDueDate: 15
+      }
     },
-    {
-      id: 'ACT002',
-      type: 'payment_success',
-      date: '2024-03-01T10:35:00',
-      description: 'Επιτυχής πληρωμή: €150.00 για Premium Subscription'
+    vatRates: {
+      standard: 0.24,
+      reduced: 0.13,
+      superReduced: 0.06,
+      zero: 0
     },
-    {
-      id: 'ACT003',
-      type: 'invoice_generated',
-      date: '2024-03-05T15:20:00',
-      description: 'Νέο τιμολόγιο δημιουργήθηκε: INV-2024-002'
+    paymentTerms: {
+      immediate: {
+        days: 0,
+        description: 'Άμεση Πληρωμή'
+      },
+      net15: {
+        days: 15,
+        description: 'Καθαρή 15 ημερών'
+      },
+      net30: {
+        days: 30,
+        description: 'Καθαρή 30 ημερών'
+      },
+      net60: {
+        days: 60,
+        description: 'Καθαρή 60 ημερών'
+      }
     }
-  ];
+  };
+  
+  // Κατηγορίες συναλλαγών
+  export const transactionCategories = {
+    subscription: {
+      label: 'Συνδρομή',
+      icon: 'pi pi-sync',
+      color: 'var(--primary-color)'
+    },
+    service: {
+      label: 'Υπηρεσίες',
+      icon: 'pi pi-cog',
+      color: 'var(--success-color)'
+    },
+    product: {
+      label: 'Προϊόντα',
+      icon: 'pi pi-shopping-cart',
+      color: 'var(--warning-color)'
+    },
+    refund: {
+      label: 'Επιστροφή Χρημάτων',
+      icon: 'pi pi-replay',
+      color: 'var(--danger-color)'
+    },
+    fee: {
+      label: 'Χρεώσεις & Τέλη',
+      icon: 'pi pi-percentage',
+      color: 'var(--help-color)'
+    }
+  };
+  
+  // Ρυθμίσεις ειδοποιήσεων
+  export const notificationSettings = {
+    paymentReminders: {
+      enabled: true,
+      daysBeforeDue: [1, 3, 7],
+      channels: ['email', 'sms']
+    },
+    paymentConfirmations: {
+      enabled: true,
+      channels: ['email']
+    },
+    failedPayments: {
+      enabled: true,
+      retryAttempts: 3,
+      retryInterval: 24, // ώρες
+      channels: ['email', 'sms']
+    },
+    newInvoices: {
+      enabled: true,
+      channels: ['email']
+    }
+  };
+  
+  // Διαμορφώσεις για αναφορές
+  export const reportingConfig = {
+    defaultDateRanges: {
+      today: 'today',
+      yesterday: 'yesterday',
+      thisWeek: 'thisWeek',
+      lastWeek: 'lastWeek',
+      thisMonth: 'thisMonth',
+      lastMonth: 'lastMonth',
+      thisQuarter: 'thisQuarter',
+      lastQuarter: 'lastQuarter',
+      thisYear: 'thisYear',
+      lastYear: 'lastYear'
+    },
+    exportFormats: ['pdf', 'excel', 'csv'],
+    charts: {
+      colors: {
+        income: '#22C55E',
+        expense: '#EF4444',
+        pending: '#F59E0B'
+      },
+      defaultType: 'bar'
+    }
+  };
+  
+  // Ρυθμίσεις για αυτοματοποιήσεις
+  export const automationRules = {
+    recurringPayments: {
+      enabled: true,
+      frequencies: ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'],
+      maxAttempts: 3
+    },
+    invoiceGeneration: {
+      enabled: true,
+      autoNumbering: true,
+      autoEmailDelivery: true
+    },
+    paymentReconciliation: {
+      enabled: true,
+      matchingCriteria: ['amount', 'reference', 'date'],
+      autoMatchThreshold: 0.9
+    }
+  };

@@ -1,317 +1,605 @@
 <template>
+  <div class="influencer-component">
     <div class="card">
-      <div class="font-semibold text-xl mb-4">Influencer</div>
+      <div class="font-semibold text-xl mb-4">Influencers</div>
       <DataTable
-        :value="customers1"
+        ref="dt"
+        :value="influencers"
         :paginator="true"
         :rows="10"
         dataKey="id"
         :rowHover="true"
-        v-model:filters="filters1"
+        v-model:filters="filters"
         filterDisplay="menu"
-        :loading="loading1"
-        :globalFilterFields="['name', 'country.name', 'representative.name', 'balance', 'status']"
+        :loading="loading"
+        :globalFilterFields="['name', 'category', 'followers', 'engagement', 'price']"
         showGridlines
-        @row-click="openCustomerDialog"
+        @row-click="openInfluencerDialog"
+        class="influencer-table"
+        v-if="isReady"
       >
         <template #header>
-          <div class="flex justify-between">
-            <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined @click="clearFilter()" />
-            <IconField>
-              <InputIcon>
-                <i class="pi pi-search" />
-              </InputIcon>
-              <InputText v-if="filters1 && filters1.global" v-model="filters1.global.value" placeholder="Keyword Search" />
-            </IconField>
+          <div class="custom-filter-header">
+            <Button 
+              type="button" 
+              icon="pi pi-filter-slash" 
+              label="Καθαρισμός Φίλτρων" 
+              outlined 
+              @click="clearAllFilters()" 
+              class="custom-clear-button p-button-sm"
+            />
+            <span class="custom-search-wrapper">
+              <i class="pi pi-search" />
+              <InputText 
+                v-model="filters.global.value" 
+                placeholder="Αναζήτηση..." 
+                class="custom-search-input p-inputtext-sm"
+              />
+            </span>
           </div>
         </template>
-  
-        <template #empty> No customers found. </template>
-        <template #loading> Loading customers data. Please wait. </template>
-  
-        <Column field="name" header="Name" style="min-width: 12rem">
-          <template #body="slotProps">
-            {{ slotProps.data.name }}
+
+        <template #empty> Δεν βρέθηκαν influencers. </template>
+        <template #loading> Φόρτωση δεδομένων... </template>
+
+        <Column field="name" header="Όνομα" style="min-width: 12rem" :sortable="true">
+          <template #filter="{ filterModel, filterCallback }">
+            <InputText 
+              v-model="filterModel.value" 
+              type="text"
+              @input="filterCallback()" 
+              class="p-column-filter" 
+              placeholder="Αναζήτηση ονόματος"
+            />
           </template>
-          <template #filter="slotProps">
-            <InputText v-model="slotProps.filterModel.value" type="text" placeholder="Search by name" />
-          </template>
-        </Column>
-  
-        <Column header="Country" filterField="country.name" style="min-width: 12rem">
-          <template #body="slotProps">
-            <div class="flex items-center gap-2">
-              <img alt="flag" src="https://primefaces.org/cdn/primevue/images/flag/flag_placeholder.png" :class="`flag flag-${slotProps.data.country.code}`" style="width: 24px" />
-              <span>{{ slotProps.data.country.name }}</span>
-            </div>
-          </template>
-          <template #filter="slotProps">
-            <InputText v-model="slotProps.filterModel.value" type="text" placeholder="Search by country" />
-          </template>
-          <template #filterclear="slotProps">
-            <Button type="button" icon="pi pi-times" @click="slotProps.filterCallback()" severity="secondary"></Button>
-          </template>
-          <template #filterapply="slotProps">
-            <Button type="button" icon="pi pi-check" @click="slotProps.filterCallback()" severity="success"></Button>
-          </template>
-        </Column>
-  
-        <Column header="Agent" filterField="representative" :showFilterMatchModes="false" :filterMenuStyle="{ width: '14rem' }" style="min-width: 14rem">
           <template #body="slotProps">
             <div class="flex items-center gap-2">
-              <img :alt="slotProps.data.representative.name" :src="`https://primefaces.org/cdn/primevue/images/avatar/${slotProps.data.representative.image}`" style="width: 32px" />
-              <span>{{ slotProps.data.representative.name }}</span>
-            </div>
-          </template>
-          <template #filter="slotProps">
-            <MultiSelect v-model="slotProps.filterModel.value" :options="representatives" optionLabel="name" placeholder="Any">
-              <template #option="optionProps">
-                <div class="flex items-center gap-2">
-                  <img :alt="optionProps.option.name" :src="`https://primefaces.org/cdn/primevue/images/avatar/${optionProps.option.image}`" style="width: 32px" />
-                  <span>{{ optionProps.option.name }}</span>
-                </div>
-              </template>
-            </MultiSelect>
-          </template>
-        </Column>
-  
-        <Column header="Date" filterField="date" dataType="date" style="min-width: 10rem">
-          <template #body="slotProps">
-            {{ formatDate(slotProps.data.date) }}
-          </template>
-          <template #filter="slotProps">
-            <Calendar v-model="slotProps.filterModel.value" dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" />
-          </template>
-        </Column>
-  
-        <Column header="Balance" filterField="balance" dataType="numeric" style="min-width: 10rem">
-          <template #body="slotProps">
-            {{ formatCurrency(slotProps.data.balance) }}
-          </template>
-          <template #filter="slotProps">
-            <InputNumber v-model="slotProps.filterModel.value" mode="currency" currency="USD" locale="en-US" />
-          </template>
-        </Column>
-  
-        <Column header="Status" field="status" :filterMenuStyle="{ width: '14rem' }" style="min-width: 12rem">
-          <template #body="slotProps">
-            <Tag :value="slotProps.data.status" :severity="getSeverity(slotProps.data.status)" />
-          </template>
-          <template #filter="slotProps">
-            <Dropdown v-model="slotProps.filterModel.value" :options="statuses" placeholder="Select One" showClear>
-              <template #option="optionProps">
-                <Tag :value="optionProps.option" :severity="getSeverity(optionProps.option)" />
-              </template>
-            </Dropdown>
-          </template>
-        </Column>
-  
-        <Column field="activity" header="Activity" :showFilterMatchModes="false" style="min-width: 12rem">
-          <template #body="slotProps">
-            <ProgressBar :value="slotProps.data.activity" :showValue="false" style="height: 6px"></ProgressBar>
-          </template>
-          <template #filter="slotProps">
-            <Slider v-model="slotProps.filterModel.value" range class="m-4"></Slider>
-            <div class="flex items-center justify-between px-2">
-              <span>{{ slotProps.filterModel.value ? slotProps.filterModel.value[0] : 0 }}</span>
-              <span>{{ slotProps.filterModel.value ? slotProps.filterModel.value[1] : 100 }}</span>
+              <img :src="slotProps.data.image" :alt="slotProps.data.name" style="width: 32px; height: 32px; border-radius: 50%;" />
+              <span>{{ slotProps.data.name }}</span>
             </div>
           </template>
         </Column>
-  
-        <Column field="verified" header="Verified" dataType="boolean" bodyClass="text-center" style="min-width: 8rem">
-          <template #body="slotProps">
-            <i class="pi" :class="{ 'pi-check-circle text-green-500 ': slotProps.data.verified, 'pi-times-circle text-red-500': !slotProps.data.verified }"></i>
+
+        <Column field="category" header="Κατηγορία" style="min-width: 12rem" :sortable="true">
+          <template #filter="{ filterModel, filterCallback }">
+            <Dropdown
+              v-model="filterModel.value"
+              :options="categories"
+              @change="filterCallback()"
+              placeholder="Επιλογή κατηγορίας"
+              class="p-column-filter"
+              :showClear="true"
+            />
           </template>
-          <template #filter="slotProps">
-            <label for="verified-filter" class="font-bold"> Verified </label>
-            <TriStateCheckbox v-model="slotProps.filterModel.value" inputId="verified-filter" />
+          <template #body="slotProps">
+            <Tag :value="slotProps.data.category" severity="info" />
+          </template>
+        </Column>
+
+        <Column field="followers" header="Ακόλουθοι" style="min-width: 10rem" :sortable="true">
+          <template #filter="{ filterModel, filterCallback }">
+            <div class="flex gap-2">
+              <InputNumber
+                v-model="filterModel.value"
+                @input="filterCallback()"
+                placeholder="Ελάχιστο"
+                class="p-column-filter"
+                :min="0"
+              />
+            </div>
+          </template>
+          <template #body="slotProps">
+            {{ formatNumber(slotProps.data.followers) }}
+          </template>
+        </Column>
+
+        <Column field="engagement" header="Engagement" style="min-width: 8rem" :sortable="true">
+          <template #filter="{ filterModel, filterCallback }">
+            <div class="flex gap-2">
+              <InputNumber
+                v-model="filterModel.value"
+                @input="filterCallback()"
+                placeholder="Ελάχιστο %"
+                class="p-column-filter"
+                :min="0"
+                :max="100"
+                suffix="%"
+              />
+            </div>
+          </template>
+          <template #body="slotProps">
+            <div class="flex align-items-center gap-2">
+              <div class="flex-1">
+                <ProgressBar :value="slotProps.data.engagement" :showValue="false" />
+              </div>
+              <span class="font-bold">{{ slotProps.data.engagement }}%</span>
+            </div>
+          </template>
+        </Column>
+
+        <Column field="price" header="Κόστος" style="min-width: 10rem" :sortable="true">
+          <template #filter="{ filterModel, filterCallback }">
+            <div class="flex flex-column gap-2">
+              <InputNumber
+                v-model="filterModel.value[0]"
+                @input="filterCallback()"
+                placeholder="Από"
+                class="p-column-filter"
+                :min="0"
+                mode="currency"
+                currency="EUR"
+              />
+              <InputNumber
+                v-model="filterModel.value[1]"
+                @input="filterCallback()"
+                placeholder="Έως"
+                class="p-column-filter"
+                :min="0"
+                mode="currency"
+                currency="EUR"
+              />
+            </div>
+          </template>
+          <template #body="slotProps">
+            {{ formatCurrency(slotProps.data.price) }}
+          </template>
+        </Column>
+
+        <Column field="rating" header="Αξιολόγηση" style="min-width: 10rem" :sortable="true">
+          <template #filter="{ filterModel, filterCallback }">
+            <Rating
+              v-model="filterModel.value"
+              @change="filterCallback()"
+              :cancel="false"
+              :stars="5"
+            />
+          </template>
+          <template #body="slotProps">
+            <div class="flex align-items-center gap-2">
+              <Rating :modelValue="slotProps.data.rating" :readonly="true" :cancel="false" />
+              <span class="font-bold ml-2">{{ slotProps.data.rating.toFixed(1) }}</span>
+            </div>
+          </template>
+        </Column>
+
+        <Column field="verified" header="Επαλήθευση" bodyClass="text-center" style="min-width: 8rem">
+          <template #body="slotProps">
+            <i class="pi" :class="{ 'pi-check-circle text-green-500': true }"></i>
           </template>
         </Column>
       </DataTable>
-  
-      <!-- Customer Details Dialog -->
-      <Dialog v-model:visible="customerDialogVisible" :style="{ width: '450px' }" header="           " :modal="true" class="p-fluid">
-        <div v-if="selectedCustomer">
-            <div class="field" style="width: 100%;">
-                <label  style="font-size: large;" for="name">{{selectedCustomer.name}}</label>
-            </div>
 
-          <!-- Εικόνα του καλλιτέχνη στο κέντρο με διαφανές background -->
+      <!-- Influencer Details Dialog -->
+      <Dialog 
+        v-model:visible="dialogVisible" 
+        :style="{ width: '500px' }" 
+        :header="selectedInfluencer?.name || ''" 
+        :modal="true" 
+        class="p-fluid"
+      >
+        <div v-if="selectedInfluencer" class="influencer-details">
           <div class="text-center mb-5">
             <img
-              :src="`https://primefaces.org/cdn/primevue/images/avatar/${selectedCustomer.representative.image}`"
-              :alt="selectedCustomer.representative.name"
-              class="rounded-circle shadow-2"
-              style="width: 150px; height: 150px; object-fit: cover; background-color: transparent"
+              :src="selectedInfluencer.image"
+              :alt="selectedInfluencer.name"
+              class="rounded-circle"
+              style="width: 150px; height: 150px; object-fit: cover;"
             />
           </div>
-  
-          <!-- Ονομα και χώρα σε δύο στήλες -->
-          <div class="flex flex-wrap justify-content-center gap-3">
-            <div class="field" style="width: 45%;">
-              <label for="name">Name</label>
-              <InputText id="name" v-model="selectedCustomer.name" readonly required class="w-full text-center" />
+
+          <div class="grid">
+            <div class="col-6">
+              <div class="field">
+                <label>Κατηγορία</label>
+                <Tag :value="selectedInfluencer.category" severity="info" class="w-full justify-content-center"/>
+              </div>
             </div>
-            <div class="field" style="width: 45%;">
-              <label for="country">Country</label>
-              <InputText id="country" v-model="selectedCustomer.country.name" readonly required class="w-full text-center" />
+            <div class="col-6">
+              <div class="field">
+                <label>Engagement Rate</label>
+                <div class="text-center font-bold">{{ selectedInfluencer.engagement }}%</div>
+              </div>
             </div>
           </div>
-  
-         
-  
-          <!-- Άλλες γενικές πληροφορίες σε δύο στήλες -->
-          <div class="flex flex-wrap justify-content-center gap-3 mt-4">
-            <div class="field" style="width: 45%;">
-              <label for="status">Status</label>
-              <InputText id="status" v-model="selectedCustomer.status" readonly required class="w-full text-center" />
+
+          <div class="field mt-4">
+            <label>Κοινωνικά Δίκτυα</label>
+            <div class="flex justify-content-around mt-2">
+              <div v-if="selectedInfluencer.socialMedia.instagram" class="text-center">
+                <i class="pi pi-instagram text-xl"></i>
+                <div class="text-sm">{{ selectedInfluencer.socialMedia.instagram }}</div>
+              </div>
+              <div v-if="selectedInfluencer.socialMedia.youtube" class="text-center">
+                <i class="pi pi-youtube text-xl"></i>
+                <div class="text-sm">{{ selectedInfluencer.socialMedia.youtube }}</div>
+              </div>
+              <div v-if="selectedInfluencer.socialMedia.tiktok" class="text-center">
+                <i class="pi pi-twitter text-xl"></i>
+                <div class="text-sm">{{ selectedInfluencer.socialMedia.tiktok }}</div>
+              </div>
             </div>
-            <div class="field" style="width: 45%;">
-              <label for="agent">Agent</label>
-              <InputText id="agent" v-model="selectedCustomer.representative.name" readonly required class="w-full text-center" />
-            </div>
-             <!-- Balance ως κουμπί -->
-          <div class="text-center mt-4">
-            <Button class="p-button-rounded p-button-info w-full" >Pay: {{ formatCurrency(selectedCustomer.balance) }}</Button>
           </div>
+
+          <div class="field mt-4">
+            <label>Πρόσφατες Συνεργασίες</label>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <Tag v-for="brand in selectedInfluencer.recentBrands" 
+                   :key="brand" 
+                   :value="brand" 
+                   severity="secondary"/>
+            </div>
+          </div>
+
+          <div class="field mt-4">
+            <label>Αξιολόγηση</label>
+            <div class="flex align-items-center gap-2 mt-2">
+              <Rating 
+                v-model="selectedInfluencer.rating" 
+                :readonly="true" 
+                :cancel="false"
+                :stars="5"
+              />
+              <span class="font-bold ml-2">({{ selectedInfluencer.rating.toFixed(1) }})</span>
+            </div>
+          </div>
+
+          <div class="flex justify-content-between mt-4">
+            <Button 
+              label="Προβολή Προφίλ" 
+              icon="pi pi-user" 
+              class="p-button-outlined"
+            />
+            <Button 
+              :label="`Συνεργασία - ${formatCurrency(selectedInfluencer.price)}`"
+              icon="pi pi-send" 
+              severity="success"
+            />
           </div>
         </div>
       </Dialog>
     </div>
-  </template>
-  
-  <script>
-  import { CustomerService } from '@/service/CustomerService';
-  import { FilterMatchMode, FilterOperator } from 'primevue/api';
-  import { ref } from 'vue';
-  
-  export default {
-    data() {
-      return {
-        customers1: [],
-        filters1: null,
-        loading1: true,
-        selectedCustomer: null,
-        customerDialogVisible: false,
-        statuses: ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'],
-        representatives: [
-          { name: 'Amy Elsner', image: 'amyelsner.png' },
-          { name: 'Anna Fali', image: 'annafali.png' },
-          { name: 'Asiya Javayant', image: 'asiyajavayant.png' },
-          { name: 'Bernardo Dominic', image: 'bernardodominic.png' },
-          { name: 'Elwin Sharvill', image: 'elwinsharvill.png' },
-          { name: 'Ioni Bowcher', image: 'ionibowcher.png' },
-          { name: 'Ivan Magalhaes', image: 'ivanmagalhaes.png' },
-          { name: 'Onyama Limba', image: 'onyamalimba.png' },
-          { name: 'Stephen Shaw', image: 'stephenshaw.png' },
-          { name: 'XuXue Feng', image: 'xuxuefeng.png' }
-        ]
-      };
+  </div>
+</template>
+
+<script>
+import { CustomerService } from '@/service/CustomerService';
+import { FilterMatchMode, FilterOperator } from 'primevue/api';
+import Rating from 'primevue/rating';
+
+export default {
+  components: {
+    Rating
+  },
+  data() {
+    return {
+      isReady: false,
+      influencers: [],
+      filters: {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
+        },
+        category: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
+        },
+        followers: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
+        },
+        engagement: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
+        },
+        price: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.BETWEEN }]
+        },
+        rating: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
+        }
+      },
+      loading: true,
+      selectedInfluencer: null,
+      dialogVisible: false,
+      categories: [
+        'Music & Entertainment',
+        'Lifestyle & TV',
+        'Fashion & Beauty',
+        'Food & Cooking',
+        'Lifestyle & Fashion',
+        'Fitness & Health',
+        'Lifestyle & Acting',
+        'Home & Decoration'
+      ]
+    };
+  },
+  async created() {
+    try {
+      const service = new CustomerService();
+      const response = await service.getCustomersLarge();
+      this.influencers = response.data;
+      this.loading = false;
+      this.isReady = true;
+    } catch (error) {
+      console.error('Error loading influencers:', error);
+      this.loading = false;
+    }
+  },
+  methods: {
+    formatCurrency(value) {
+      return new Intl.NumberFormat('el-GR', {
+        style: 'currency',
+        currency: 'EUR'
+      }).format(value);
     },
-    methods: {
-      formatCurrency(value) {
-        return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-      },
-      formatDate(value) {
-        if (!value) return '';
-        if (typeof value === 'string' || typeof value === 'number') {
-          value = new Date(value);
+    formatNumber(value) {
+      if (value >= 1000000) {
+        return (value / 1000000).toFixed(1) + 'M';
+      } else if (value >= 1000) {
+        return (value / 1000).toFixed(1) + 'K';
+      }
+      return value;
+    },
+    clearAllFilters() {
+      this.filters = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        name: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
+        },
+        category: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
+        },
+        followers: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
+        },
+        engagement: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
+        },
+        price: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.BETWEEN }]
+        },
+        rating: { 
+          operator: FilterOperator.AND,
+          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
         }
-        return value.toLocaleDateString('en-US', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric'
-        });
-      },
-      getSeverity(status) {
-        switch (status) {
-          case 'unqualified':
-            return 'danger';
-          case 'qualified':
-            return 'success';
-          case 'new':
-            return 'info';
-          case 'negotiation':
-            return 'warning';
-          case 'renewal':
-            return 'secondary';
-          case 'proposal':
-            return 'primary';
-          default:
-            return null;
-        }
-      },
-      initFilters1() {
-        this.filters1 = {
-          global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-          name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
-          'country.name': { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
-          representative: { value: null, matchMode: FilterMatchMode.IN },
-          date: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }] },
-          balance: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
-          status: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] },
-          activity: { value: [0, 100], matchMode: FilterMatchMode.BETWEEN },
-          verified: { value: null, matchMode: FilterMatchMode.EQUALS }
-        };
-      },
-      clearFilter() {
-        this.initFilters1();
-      },
-      openCustomerDialog(event) {
-        this.selectedCustomer = { ...event.data };
-        this.customerDialogVisible = true;
-      },
-      hideDialog() {
-        this.customerDialogVisible = false;
-        this.selectedCustomer = null;
+      };
+      if (this.$refs.dt) {
+        this.$refs.dt.reset();
       }
     },
-    mounted() {
-      const customerService = new CustomerService();
-      customerService.getCustomersLarge().then((data) => {
-        this.customers1 = data;
-        this.loading1 = false;
-        this.customers1.forEach((customer) => {
-          if (customer.date) {
-            customer.date = new Date(customer.date);
-          }
-        });
-      });
-  
-      this.initFilters1();
+    openInfluencerDialog(event) {
+      this.selectedInfluencer = event.data;
+      this.dialogVisible = true;
     }
-  };
-  </script>
+  }
+};
+</script>
+
+<style scoped lang="scss">
+.influencer-component {
+  /* Απομόνωση από το grid system του Dashboard */
+  width: 100%;
+  display: block;
   
-  <style scoped lang="scss">
-  :deep(.p-datatable-frozen-tbody) {
-    font-weight: bold;
+  .card {
+    padding: 1.5rem;
+    margin-bottom: 0;
+    border-radius: var(--border-radius);
+    background: var(--surface-card);
+    
+    /* Επαναφορά του box model */
+    box-sizing: border-box;
+  }
+
+  /* Επαναφορά των στυλ για το DataTable */
+  :deep(.p-datatable) {
+    .p-datatable-header {
+      background: var(--surface-section);
+      border: 1px solid var(--surface-border);
+      padding: 1rem;
+      text-align: left;
+    }
+    
+    .p-datatable-thead > tr > th {
+      background: var(--surface-section);
+      color: var(--text-color);
+      padding: 1rem;
+      border: 1px solid var(--surface-border);
+    }
+    
+    .p-datatable-tbody > tr > td {
+      padding: 1rem;
+      border: 1px solid var(--surface-border);
+    }
+  }
+
+  /* Στυλ για τα φίλτρα */
+  .custom-filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    gap: 1rem;
+    
+    /* Επαναφορά του box model για τα inputs */
+    .custom-search-wrapper {
+      flex: 1;
+      max-width: 300px;
+      
+      .p-inputtext {
+        width: 100%;
+        box-sizing: border-box;
+      }
+    }
+  }
+
+  /* Στυλ για τα column filters */
+  :deep(.p-column-filter) {
+    width: 100%;
+    
+    .p-column-filter-element {
+      width: 100%;
+      
+      .p-inputtext,
+      .p-dropdown,
+      .p-inputnumber-input {
+        width: 100%;
+        box-sizing: border-box;
+      }
+    }
+  }
+
+  /* Responsive διορθώσεις */
+  @media screen and (max-width: 768px) {
+    .custom-filter-header {
+      flex-direction: column;
+      align-items: stretch;
+      
+      .custom-search-wrapper {
+        max-width: 100%;
+      }
+    }
+  }
+}
+
+.influencer-table {
+  :deep(.p-datatable-header) {
+    background: var(--surface-0);
+    border: 1px solid var(--surface-200);
   }
   
-  :deep(.p-datatable-scrollable .p-frozen-column) {
-    font-weight: bold;
+  :deep(.p-column-filter-menu-button) {
+    width: 2rem;
+    height: 2rem;
   }
   
+  :deep(.p-column-filter-overlay) {
+    min-width: 220px;
+  }
+}
+
+/* Επιπλέον στυλ για τα φίλτρα στηλών */
+:deep(.p-column-filter-element) {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  
+  .p-inputnumber-input,
+  .p-dropdown {
+    width: 100%;
+  }
+  
+  .p-rating {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.influencer-details {
   .field {
-    text-align: center;
+    margin-bottom: 1.5rem;
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--text-color-secondary);
+    }
   }
-  
-  img {
-    background-color: transparent;
-  }
-  
-  .balance {
-    text-align: center !important;
-  }
-  .text-center {
-    border-radius: 20px;
-
-    text-align: center !important;
-}
- .shadow-2{
-    box-shadow: none  !important;
 }
 
-  </style>
+.rounded-circle {
+  border-radius: 50%;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+}
+
+.engagement-progress {
+  .p-progressbar {
+    background: #f5f5f5;
+  }
+  
+  .p-progressbar-value {
+    background: var(--primary-color);
+    transition: width 0.5s ease;
+  }
+}
+
+:deep(.p-progressbar) {
+  border-radius: 4px;
+  background: #f5f5f5;
+}
+
+:deep(.p-progressbar-value) {
+  border-radius: 4px;
+  background: var(--primary-color);
+}
+
+:deep(.p-rating) {
+  .p-rating-item {
+    &.p-rating-item-active {
+      color: var(--yellow-500);
+    }
+    
+    &:focus {
+      box-shadow: none;
+    }
+  }
+}
+
+.p-input-icon-left {
+  .p-inputtext {
+    padding-left: 2.5rem;
+    min-width: 300px;
+  }
+  
+  i {
+    left: 0.75rem;
+  }
+}
+
+/* Προσθήκη responsive styles */
+@media screen and (max-width: 768px) {
+  .p-input-icon-left .p-inputtext {
+    min-width: 200px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .p-input-icon-left .p-inputtext {
+    min-width: 150px;
+  }
+}
+
+:deep(.p-datatable-header) {
+  padding: 1rem;
+  background-color: var(--surface-0);
+}
+
+:deep(.p-button-sm) {
+  font-size: 0.875rem;
+  padding: 0.4rem 0.8rem;
+}
+
+:deep(.p-inputtext-sm) {
+  font-size: 0.875rem;
+  padding: 0.4rem 0.8rem;
+}
+
+.p-column-filter {
+  width: 100%;
+  
+  &.p-inputnumber {
+    .p-inputnumber-input {
+      width: 100%;
+    }
+  }
+}
+</style>
   

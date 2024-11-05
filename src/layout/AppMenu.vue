@@ -6,7 +6,7 @@
                 v-if="!item.separator" 
                 :item="item" 
                 :index="i"
-                class="home-category"
+                class="menu-item home-category"
             ></app-menu-item>
             <li v-if="item.separator" class="menu-separator"></li>
         </template>
@@ -16,10 +16,13 @@
                 v-if="!item.separator" 
                 :item="item" 
                 :index="i"
-                :class="{
-                    'finance-category': item.label === 'Οικονομικά Στοιχεία',
-                    'general-category': item.label === 'General'
-                }"
+                :class="[
+                    'menu-item',
+                    {
+                        'finance-category': item.label === 'Οικονομικά Στοιχεία',
+                        'general-category': item.label === 'General'
+                    }
+                ]"
             ></app-menu-item>
             <li v-if="item.separator" class="menu-separator"></li>
         </template>
@@ -189,224 +192,141 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.menu-wrapper {
+    padding: 1rem;
+}
+
 .layout-menu {
     list-style: none;
-    padding: 1rem 0;
     margin: 0;
-    background: linear-gradient(145deg, var(--surface-0), var(--surface-50));
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 
-    :deep(.menu-item) {
-        margin: 0.35rem 1rem;
-        border-radius: 10px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
+    .menu-item {
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
 
-        &::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-100), transparent);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+        :deep(.menu-item-link) {
+            display: flex;
+            align-items: center;
+            padding: 0.9rem 1.2rem;
+            color: #2c3e50;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            letter-spacing: 0.2px;
 
-        &:hover {
-            transform: translateX(5px);
-            background-color: var(--surface-100);
+            i {
+                margin-right: 12px;
+                font-size: 1.1rem;
+                color: #1e88e5;
+                transition: all 0.3s ease;
+            }
 
-            &::before {
-                opacity: 0.5;
+            &:hover {
+                background: #f5f9ff;
+                transform: translateX(3px);
+
+                i {
+                    transform: scale(1.1);
+                    color: #1976d2;
+                }
             }
         }
 
         &.active-route {
-            background: linear-gradient(90deg, var(--primary-100), var(--surface-0));
-            box-shadow: 0 2px 8px rgba(var(--primary-500), 0.15);
-            
-            .menu-item-link {
-                color: var(--primary-700);
+            :deep(.menu-item-link) {
+                background: #e3f2fd;
+                color: #1565c0;
                 font-weight: 600;
-            }
-        }
-    }
-
-    :deep(.menu-item-link) {
-        padding: 0.85rem 1.2rem;
-        color: var(--surface-900);
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-
-        i {
-            color: var(--primary-600);
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-        }
-
-        &:hover {
-            color: var(--primary-700);
-
-            i {
-                transform: scale(1.2) translateX(3px);
-                color: var(--primary-800);
-            }
-        }
-    }
-
-    // Οικονομικά Στοιχεία styling
-    :deep(.finance-category) {
-        .menu-item-link {
-            background: linear-gradient(to right, var(--primary-50), transparent);
-            border-left: 3px solid var(--primary-500);
-            
-            i {
-                color: var(--primary-700);
-            }
-
-            &:hover {
-                background: linear-gradient(to right, var(--primary-100), var(--surface-0));
-                border-left-color: var(--primary-700);
 
                 i {
-                    color: var(--primary-900);
+                    color: #1565c0;
                 }
             }
         }
     }
 
-    // Category Headers
-    :deep(.menu-category) {
-        margin: 1.8rem 1.2rem 1rem;
-        font-weight: 700;
-        color: var(--surface-600);
-        text-transform: uppercase;
-        font-size: 0.9rem;
-        letter-spacing: 0.8px;
-        position: relative;
-        padding-left: 0.8rem;
+    .finance-category {
+        :deep(.menu-item-link) {
+            background: #fafafa;
+            border-left: 3px solid #1e88e5;
 
-        &::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 1rem;
-            background: var(--primary-500);
-            border-radius: 2px;
+            i {
+                color: #1976d2;
+            }
+
+            &:hover {
+                background: #f5f9ff;
+            }
         }
     }
 
-    // Separator styling
     .menu-separator {
-        margin: 1.5rem 1rem;
-        height: 2px;
-        background: linear-gradient(to right, 
-            var(--surface-200) 0%, 
-            var(--primary-200) 50%, 
-            var(--surface-200) 100%
-        );
-        border-radius: 1px;
-    }
-
-    // Home category special styling
-    :deep(.home-category) {
-        .menu-item-link {
-            i {
-                color: var(--primary-500);
-            }
-
-            &:hover i {
-                color: var(--primary-700);
-            }
-        }
-    }
-
-    // General category styling
-    :deep(.general-category) {
-        .menu-item-link {
-            i {
-                color: var(--surface-700);
-            }
-
-            &:hover i {
-                color: var(--surface-900);
-            }
-        }
+        height: 1px;
+        background: #e8eaf6;
+        margin: 1rem 0;
     }
 }
 
-.paginator {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background: var(--surface-50);
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-
-    &-button {
-        background: linear-gradient(145deg, var(--primary-500), var(--primary-600));
-        border: none;
-        color: white;
-        padding: 0.7rem 1.2rem;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(var(--primary-500), 0.2);
-
-        &:disabled {
-            background: linear-gradient(145deg, var(--surface-200), var(--surface-300));
-            box-shadow: none;
-        }
-
-        &:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(var(--primary-500), 0.3);
-            background: linear-gradient(145deg, var(--primary-600), var(--primary-700));
-        }
-
-        &:active:not(:disabled) {
-            transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(var(--primary-500), 0.2);
-        }
-
-        i {
-            transition: transform 0.3s ease;
-        }
-
-        &:hover i {
-            transform: scale(1.2);
-        }
-    }
-}
-
-// Προσθήκη dark mode
+// Dark mode
 :deep([data-theme="dark"]) {
     .layout-menu {
-        background: linear-gradient(145deg, var(--surface-900), var(--surface-800));
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        background: #1a1f2c;
 
-        .menu-item-link {
-            color: var(--surface-100);
+        .menu-item {
+            :deep(.menu-item-link) {
+                color: #e0e6ed;
 
-            i {
-                color: var(--primary-400);
+                i {
+                    color: #64b5f6;
+                }
+
+                &:hover {
+                    background: #252d3b;
+                }
             }
 
-            &:hover {
-                color: var(--primary-300);
-                i {
-                    color: var(--primary-200);
+            &.active-route {
+                :deep(.menu-item-link) {
+                    background: #252d3b;
+                    color: #90caf9;
                 }
             }
         }
+
+        .finance-category {
+            :deep(.menu-item-link) {
+                background: #1e242e;
+                border-left-color: #64b5f6;
+            }
+        }
+
+        .menu-separator {
+            background: #2c3547;
+        }
     }
+}
+
+:deep(.menu-item-link) {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 500 !important;
+}
+
+:deep(.menu-item-link:hover) {
+    background-color: #f0f7ff !important;
+    color: #1976d2 !important;
+}
+
+:deep(.menu-item.active-route .menu-item-link) {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+    border-left: 3px solid #1976d2 !important;
+}
+
+:deep(.menu-item i) {
+    color: #1976d2 !important;
 }
 </style>

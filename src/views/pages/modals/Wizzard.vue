@@ -1,5 +1,5 @@
 <template>
-    <div class="dashboard">
+    <div class="wizzard-modal">
       <!-- The Modal -->
       <div class="modal" @click.self="closeModal" v-if="showModal">
         <!-- Modal content -->
@@ -88,8 +88,8 @@
   };
   </script>
   
-  <style>
-  .dashboard {
+  <style scoped>
+  .wizzard-modal {
     padding-top: 20px;
   }
   
@@ -129,18 +129,18 @@
     flex-direction: column;
     align-items: center;
     position: relative;
-  }
-  
-  /* Style the input fields */
-  input {
-    padding: 10px;
-    width: 100%;
-    font-size: 17px;
-    font-family: Arial, sans-serif;
-    border: 1px solid #aaaaaa;
-    border-radius: 25px;
-    margin-bottom: 20px;
-    text-align: center;
+    
+    /* Περιορίζουμε το input styling μόνο στα inputs μέσα στο form */
+    :deep(input) {
+      padding: 10px;
+      width: 100%;
+      font-size: 17px;
+      font-family: Arial, sans-serif;
+      border: 1px solid #aaaaaa;
+      border-radius: 25px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
   }
   
   /* Style the steps (circles) */
@@ -166,7 +166,7 @@
   }
   
   /* Buttons */
-  button.wizzard {
+  :deep(.wizzard) {
     color: rgb(252, 230, 230);
     border: none;
     padding: 10px 20px;
