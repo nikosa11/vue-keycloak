@@ -74,6 +74,11 @@ export default {
                             label: 'Προϊόντα', 
                             icon: 'text-2xl mb-2 pi pi-plus', 
                             to: '/home/crud' 
+                        },
+                        { 
+                            label: 'Portfolio', 
+                            icon: 'text-2xl mb-2 pi pi-images', 
+                            to: '/portfolio' 
                         }
                     ]
                 }

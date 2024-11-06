@@ -392,8 +392,9 @@ export default {
   .card {
     padding: 1.5rem;
     margin-bottom: 0;
-    border-radius: var(--border-radius);
+    border-radius: 1.5rem;
     background: var(--surface-card);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     
     /* Επαναφορά του box model */
     box-sizing: border-box;
@@ -401,23 +402,32 @@ export default {
 
   /* Επαναφορά των στυλ για το DataTable */
   :deep(.p-datatable) {
+    border-radius: 1rem;
+    overflow: hidden;
+    
     .p-datatable-header {
+      border-radius: 1rem 1rem 0 0;
       background: var(--surface-section);
       border: 1px solid var(--surface-border);
-      padding: 1rem;
-      text-align: left;
+      padding: 1.25rem;
     }
     
     .p-datatable-thead > tr > th {
-      background: var(--surface-section);
-      color: var(--text-color);
-      padding: 1rem;
-      border: 1px solid var(--surface-border);
+      &:first-child {
+        border-top-left-radius: 0.8rem;
+      }
+      &:last-child {
+        border-top-right-radius: 0.8rem;
+      }
     }
     
-    .p-datatable-tbody > tr > td {
-      padding: 1rem;
-      border: 1px solid var(--surface-border);
+    .p-datatable-tbody > tr:last-child > td {
+      &:first-child {
+        border-bottom-left-radius: 0.8rem;
+      }
+      &:last-child {
+        border-bottom-right-radius: 0.8rem;
+      }
     }
   }
 
@@ -599,6 +609,152 @@ export default {
     .p-inputnumber-input {
       width: 100%;
     }
+  }
+}
+
+/* Στυλ για το DataTable */
+:deep(.p-datatable) {
+  border-radius: 1rem;
+  overflow: hidden;
+  
+  .p-datatable-header {
+    border-radius: 1rem 1rem 0 0;
+    background: var(--surface-section);
+    border: 1px solid var(--surface-border);
+    padding: 1.25rem;
+  }
+  
+  .p-datatable-thead > tr > th {
+    &:first-child {
+      border-top-left-radius: 0.8rem;
+    }
+    &:last-child {
+      border-top-right-radius: 0.8rem;
+    }
+  }
+  
+  .p-datatable-tbody > tr:last-child > td {
+    &:first-child {
+      border-bottom-left-radius: 0.8rem;
+    }
+    &:last-child {
+      border-bottom-right-radius: 0.8rem;
+    }
+  }
+}
+
+/* Στυλ για τα inputs και buttons */
+:deep(.p-inputtext),
+:deep(.p-dropdown),
+:deep(.p-multiselect),
+:deep(.p-button) {
+  border-radius: 1rem !important;
+}
+
+:deep(.p-tag) {
+  border-radius: 2rem;
+  padding: 0.4rem 1rem;
+}
+
+:deep(.p-progressbar) {
+  border-radius: 1rem;
+  overflow: hidden;
+  
+  .p-progressbar-value {
+    border-radius: 1rem;
+  }
+}
+
+/* Dialog στυλ */
+:deep(.p-dialog) {
+  border-radius: 1.5rem;
+  overflow: hidden;
+  
+  .p-dialog-header {
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+  }
+  
+  .p-dialog-content {
+    border-bottom-left-radius: 1.5rem;
+    border-bottom-right-radius: 1.5rem;
+  }
+}
+
+/* Column filter menu */
+:deep(.p-column-filter-overlay) {
+  border-radius: 1rem;
+  .p-column-filter-constraint {
+    border-radius: 0.8rem;
+  }
+}
+
+/* Rating stars */
+:deep(.p-rating) {
+  .p-rating-item {
+    border-radius: 50%;
+    
+    &.p-rating-item-active {
+      transform: scale(1.1);
+      transition: transform 0.2s ease;
+    }
+  }
+}
+
+/* Search input */
+.p-input-icon-left {
+  .p-inputtext {
+    border-radius: 2rem !important;
+    padding-left: 2.8rem;
+  }
+}
+
+/* Chips/Tags */
+:deep(.p-chip) {
+  border-radius: 2rem;
+}
+
+/* Dialog content */
+.influencer-details {
+  .field {
+    .p-tag {
+      border-radius: 2rem;
+    }
+    
+    .p-button {
+      border-radius: 2rem;
+    }
+  }
+}
+
+/* Progress bar */
+:deep(.p-progressbar) {
+  border-radius: 1rem;
+  
+  .p-progressbar-value {
+    border-radius: 1rem;
+  }
+}
+
+/* Dropdown menus */
+:deep(.p-dropdown-panel) {
+  border-radius: 1rem;
+  overflow: hidden;
+  
+  .p-dropdown-items {
+    padding: 0.5rem;
+    
+    .p-dropdown-item {
+      border-radius: 0.8rem;
+      margin: 0.2rem 0;
+    }
+  }
+}
+
+/* Input number */
+:deep(.p-inputnumber) {
+  .p-inputtext {
+    border-radius: 1rem !important;
   }
 }
 </style>

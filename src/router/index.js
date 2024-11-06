@@ -97,6 +97,11 @@ const router = createRouter({
                     path: '/documentation',
                     name: 'documentation',
                     component: () => import('@/views/utilities/Documentation.vue')
+                },
+                {
+                    path: '/portfolio',
+                    name: 'portfolio',
+                    component: () => import('@/views/pages/home/Portfolio.vue')
                 }
             ]
         },
