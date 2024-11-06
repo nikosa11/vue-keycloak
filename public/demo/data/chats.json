@@ -1,0 +1,132 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "name": "2J",
+            "avatar": "amyelsner.png",
+            "status": "Online",
+            "lastMessage": "Ευχαριστώ για την ενημέρωση!",
+            "unread": 2,
+            "messages": [
+                {
+                    "id": 101,
+                    "text": "Καλημέρα! Έχω μια νέα καμπάνια Nike για σένα",
+                    "timestamp": "2024-02-15T09:00:00",
+                    "sent": false
+                },
+                {
+                    "id": 102,
+                    "text": "Τέλεια! Πες μου περισσότερα",
+                    "timestamp": "2024-02-15T09:05:00",
+                    "sent": true
+                },
+                {
+                    "id": 103,
+                    "text": "Θα σου στείλω το brief της καμπάνιας",
+                    "timestamp": "2024-02-15T09:10:00",
+                    "sent": false
+                },
+                {
+                    "id": 104,
+                    "text": "Ευχαριστώ για την ενημέρωση!",
+                    "timestamp": "2024-02-15T09:15:00",
+                    "sent": true
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Amiyammi",
+            "avatar": "annafali.png",
+            "status": "Offline",
+            "lastMessage": "Θα το κοιτάξω και θα σου πω",
+            "unread": 0,
+            "messages": [
+                {
+                    "id": 201,
+                    "text": "Γεια σου! Ενδιαφέρεσαι για την καμπάνια της Sephora;",
+                    "timestamp": "2024-02-14T15:00:00",
+                    "sent": false
+                },
+                {
+                    "id": 202,
+                    "text": "Θα το κοιτάξω και θα σου πω",
+                    "timestamp": "2024-02-14T15:30:00",
+                    "sent": true
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Mikeus",
+            "avatar": "bernardodominic.png",
+            "status": "Online",
+            "lastMessage": "Τα ακουστικά έφτασαν, ξεκινάω το review",
+            "unread": 1,
+            "messages": [
+                {
+                    "id": 301,
+                    "text": "Πότε θα παραλάβεις τα JBL;",
+                    "timestamp": "2024-02-14T16:00:00",
+                    "sent": false
+                },
+                {
+                    "id": 302,
+                    "text": "Μόλις τα παρέλαβα",
+                    "timestamp": "2024-02-14T16:30:00",
+                    "sent": true
+                },
+                {
+                    "id": 303,
+                    "text": "Τα ακουστικά έφτασαν, ξεκινάω το review",
+                    "timestamp": "2024-02-14T16:35:00",
+                    "sent": true
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "name": "Stephen",
+            "avatar": "stephenshaw.png",
+            "status": "Offline",
+            "lastMessage": "Ωραία, θα επικοινωνήσω σύντομα",
+            "unread": 0,
+            "messages": [
+                {
+                    "id": 401,
+                    "text": "Καλησπέρα! Υπάρχει διαθεσιμότητα για την επόμενη εβδομάδα;",
+                    "timestamp": "2024-02-13T14:00:00",
+                    "sent": false
+                },
+                {
+                    "id": 402,
+                    "text": "Ωραία, θα επικοινωνήσω σύντομα",
+                    "timestamp": "2024-02-13T14:30:00",
+                    "sent": true
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "name": "Ivan",
+            "avatar": "ivanmagalhaes.png",
+            "status": "Online",
+            "lastMessage": "Το concept είναι πολύ ενδιαφέρον",
+            "unread": 3,
+            "messages": [
+                {
+                    "id": 501,
+                    "text": "Έχω μια νέα πρόταση για σένα",
+                    "timestamp": "2024-02-15T10:00:00",
+                    "sent": false
+                },
+                {
+                    "id": 502,
+                    "text": "Το concept είναι πολύ ενδιαφέρον",
+                    "timestamp": "2024-02-15T10:05:00",
+                    "sent": true
+                }
+            ]
+        }
+    ]
+} 

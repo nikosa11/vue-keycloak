@@ -139,6 +139,18 @@ const router = createRouter({
             path: '/auth/error',
             name: 'error',
             component: () => import('@/views/pages/auth/Error.vue')
+        },
+        {
+            path: '/messaging',
+            component: () => import('@/views/pages/messaging/Chat.vue'),
+            meta: {
+                requiresAuth: true
+            }
+        },
+        {
+            path: '/calendar',
+            name: 'calendar',
+            component: () => import('@/views/pages/Calendar.vue')
         }
     ],
     // Προσθήκη του scrollBehavior

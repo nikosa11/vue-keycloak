@@ -71,15 +71,17 @@ export default {
                             to: '/home/influencers' 
                         },
                         { 
-                            label: 'Προϊόντα', 
-                            icon: 'text-2xl mb-2 pi pi-plus', 
-                            to: '/home/crud' 
-                        },
-                        { 
                             label: 'Portfolio', 
                             icon: 'text-2xl mb-2 pi pi-images', 
                             to: '/portfolio' 
                         }
+                    ]
+                },
+                {
+                    label: 'Διαχείριση',
+                    items: [
+                        { label: 'Προϊόντα', icon: 'pi pi-fw pi-shopping-cart', to: 'home/crud' },
+                       
                     ]
                 }
             ],
