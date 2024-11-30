@@ -197,7 +197,7 @@
 </template>
 
 <script>
-import { ChatService } from '@/service/ChatService';
+import ChatService from '@/service/ChatService';
 
 export default {
     data() {
@@ -206,20 +206,13 @@ export default {
             selectedChat: null,
             newMessage: '',
             loading: false,
-            showMobileChat: false,
-            chatService: new ChatService()
-        }
-    },
-    computed: {
-        isMobile() {
-            return window.innerWidth < 768;
+            showMobileChat: false
         }
     },
     async created() {
         this.loading = true;
         try {
-            this.chats = await this.chatService.getChats();
-            console.log('Loaded chats:', this.chats); // Για debugging
+            this.chats = await ChatService.getChats();
         } catch (error) {
             console.error('Error loading chats:', error);
         } finally {
@@ -227,31 +220,28 @@ export default {
         }
     },
     methods: {
-        selectChat(chat) {
-            this.selectedChat = chat;
-            if (chat.unread > 0) {
-                this.markAsRead(chat.id);
-            }
-        },
         async sendMessage() {
             if (!this.newMessage.trim() || !this.selectedChat) return;
-            
+
+            const message = {
+                chatId: this.selectedChat.id,
+                text: this.newMessage,
+                timestamp: new Date().toISOString(),
+                sent: true
+            };
+
             try {
-                const message = {
-                    text: this.newMessage,
-                    chatId: this.selectedChat.id
-                };
-                
-                const sentMessage = await this.chatService.sendMessage(
-                    this.selectedChat.id,
-                    message
-                );
-                
-                this.selectedChat.messages.push(sentMessage);
-                this.selectedChat.lastMessage = this.newMessage;
+                await ChatService.sendMessage(message);
+                this.selectedChat.messages.push(message);
                 this.newMessage = '';
             } catch (error) {
                 console.error('Error sending message:', error);
+            }
+        },
+        selectChat(chat) {
+            this.selectedChat = chat;
+            if (this.isMobile) {
+                this.showMobileChat = true;
             }
         },
         formatMessageTime(timestamp) {
@@ -261,20 +251,20 @@ export default {
             });
         },
         openMobileChat(chat) {
-            this.selectedChat = chat;
+            this.selectChat(chat);
             this.showMobileChat = true;
-            if (chat.unread > 0) {
-                this.markAsRead(chat.id);
-            }
         },
         closeMobileChat() {
             this.showMobileChat = false;
-            setTimeout(() => {
-                this.selectedChat = null;
-            }, 300); // Περιμένουμε το animation του sidebar
+            this.selectedChat = null;
+        }
+    },
+    computed: {
+        isMobile() {
+            return window.innerWidth < 768;
         }
     }
-}
+};
 </script>
 
 <style lang="scss" scoped>
@@ -346,4 +336,4 @@ export default {
 .slide-leave-to {
     transform: translateX(100%);
 }
-</style> 
+</style>

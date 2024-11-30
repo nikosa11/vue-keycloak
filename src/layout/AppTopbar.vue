@@ -4,6 +4,7 @@ import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
 import { ApiService } from '@/common/apiService.js'
 import Badge from 'primevue/badge';
+import ChatService from '@/service/ChatService';
 
 const { layoutConfig, onMenuToggle } = useLayout();
 
@@ -25,26 +26,27 @@ const goToCalendar = () => {
 
 const checkUnreadMessages = async () => {
     try {
-        const response = await fetch('/demo/data/chats.json');
-        const result = await response.json();
-        const totalUnread = result.data.reduce((sum, chat) => sum + (chat.unread || 0), 0);
-        unreadMessages.value = totalUnread;
+        const count = await ChatService.getUnreadCount();
+        unreadMessages.value = count;
     } catch (error) {
         console.error('Error checking unread messages:', error);
+        unreadMessages.value = 0;
     }
 };
 
 onMounted(() => {
     bindOutsideClickListener();
     checkUnreadMessages();
-});
-
-onBeforeUnmount(() => {
-    unbindOutsideClickListener();
+    // Check for new messages every minute
+    const interval = setInterval(checkUnreadMessages, 60000);
+    onBeforeUnmount(() => {
+        clearInterval(interval);
+        unbindOutsideClickListener();
+    });
 });
 
 const logoUrl = computed(() => {
-    return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
+    return `layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`
 });
 const profile = async () => {
     router.push('/home/profile');
@@ -82,7 +84,7 @@ const bindOutsideClickListener = () => {
 };
 const unbindOutsideClickListener = () => {
     if (outsideClickListener.value) {
-        document.removeEventListener('click', outsideClickListener);
+        document.removeEventListener('click', outsideClickListener.value);
         outsideClickListener.value = null;
     }
 };

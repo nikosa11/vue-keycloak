@@ -5,29 +5,29 @@
                 <Toolbar class="mb-4">
                     <template v-slot:start>
                         <div class="my-2" v-if="!viewOnly">
-                            <Button label="Νέο Προϊόν" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
+                            <Button label="Νέα Καμπάνια" icon="pi pi-plus" class="mr-2" severity="success" @click="openNew" />
                             <Button label="Διαγραφή" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" 
-                                    :disabled="!selectedProducts || !selectedProducts.length" />
+                                    :disabled="!selectedCampaigns || !selectedCampaigns.length" />
                         </div>
                     </template>
                 </Toolbar>
 
                 <DataTable
                     ref="dt"
-                    :value="products"
-                    v-model:selection="selectedProducts"
+                    :value="campaigns"
+                    v-model:selection="selectedCampaigns"
                     dataKey="id"
                     :paginator="true"
                     :rows="10"
                     :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     :rowsPerPageOptions="[5, 10, 25]"
-                    currentPageReportTemplate="Προβολή {first} έως {last} από {totalRecords} προϊόντα"
+                    currentPageReportTemplate="Προβολή {first} έως {last} από {totalRecords} καμπάνιες"
                     class="p-datatable-rounded"
                 >
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 class="m-0">Διαχείριση Προϊόντων</h5>
+                            <h5 class="m-0">Διαχείριση Καμπανιών</h5>
                             <span class="p-input-icon-left">
                                 <i class="pi pi-search" />
                                 <InputText v-model="filters['global'].value" placeholder="Αναζήτηση..." class="p-inputtext-lg"/>
@@ -37,7 +37,7 @@
 
                     <Column selectionMode="multiple" headerStyle="width: 3rem" v-if="!viewOnly"></Column>
                     
-                    <Column field="name" header="Όνομα Προϊόντος" :sortable="true" headerStyle="width:15%; min-width:10rem;">
+                    <Column field="name" header="Όνομα Καμπάνιας" :sortable="true" headerStyle="width:15%; min-width:10rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">Όνομα</span>
                             {{ slotProps.data.name }}
@@ -46,7 +46,7 @@
 
                     <Column field="category" header="Κατηγορία" :sortable="true" headerStyle="width:15%; min-width:10rem;">
                         <template #body="slotProps">
-                            <Tag :value="slotProps.data.category" severity="info" rounded />
+                            <Tag :value="slotProps.data.category.name" severity="info" rounded />
                         </template>
                     </Column>
 
@@ -57,16 +57,16 @@
                         </template>
                     </Column>
 
-                    <Column field="budget" header="Budget" :sortable="true" headerStyle="width:10%; min-width:8rem;">
+                    <Column field="budget" header="Προϋπολογισμός" :sortable="true" headerStyle="width:10%; min-width:8rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Budget</span>
+                            <span class="p-column-title">Προϋπολογισμός</span>
                             {{ formatCurrency(slotProps.data.budget) }}
                         </template>
                     </Column>
 
-                    <Column field="date" header="Ημερομηνία" :sortable="true" headerStyle="width:12%; min-width:10rem;">
+                    <Column field="campaignDuration" header="Διάρκεια Καμπάνιας" :sortable="true" headerStyle="width:12%; min-width:10rem;">
                         <template #body="slotProps">
-                            {{ formatDate(slotProps.data.date) }}
+                            {{ slotProps.data.campaignDuration }} ημέρες
                         </template>
                     </Column>
 
@@ -78,16 +78,16 @@
 
                     <Column headerStyle="min-width:10rem;">
                         <template #body="slotProps">
-                            <Button icon="pi pi-eye" class="p-button-rounded p-button-info mr-2" @click="viewProduct(slotProps.data)" />
-                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editProduct(slotProps.data)" v-if="!viewOnly" />
-                            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="confirmDeleteProduct(slotProps.data)" v-if="!viewOnly" />
+                            <Button icon="pi pi-eye" class="p-button-rounded p-button-info mr-2" @click="viewCampaign(slotProps.data)" />
+                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editCampaign(slotProps.data)" v-if="!viewOnly" />
+                            <Button icon="pi pi-trash" class="p-button-rounded p-button-danger" @click="confirmDeleteCampaign(slotProps.data)" v-if="!viewOnly" />
                         </template>
                     </Column>
                 </DataTable>
 
                 <!-- Dialog για προσθήκη/επεξεργασία -->
                 <Dialog 
-                    v-model:visible="productDialog" 
+                    v-model:visible="campaignDialog" 
                     :style="{ width: '650px' }" 
                     :header="dialogHeader" 
                     :modal="true" 
@@ -96,10 +96,10 @@
                     <div class="grid p-fluid">
                         <div class="col-12">
                             <div class="field">
-                                <label for="image">Εικόνα Προϊόντος</label>
+                                <label for="image">Εικόνα Καμπάνιας</label>
                                 <div class="flex align-items-center">
-                                    <div v-if="product.image" class="product-image-preview mr-3">
-                                        <img :src="`/demo/images/product/${product.image}`" :alt="product.name" class="product-image" />
+                                    <div v-if="campaign.image" class="product-image-preview mr-3">
+                                        <img :src="campaign.image" :alt="campaign.name" class="product-image" />
                                     </div>
                                     <FileUpload
                                         v-if="!viewMode"
@@ -118,14 +118,14 @@
 
                         <div class="col-12 md:col-6">
                             <div class="field">
-                                <label for="name">Όνομα Προϊόντος</label>
+                                <label for="name">Όνομα Καμπάνιας</label>
                                 <InputText 
                                     id="name" 
-                                    v-model.trim="product.name" 
+                                    v-model.trim="campaign.name" 
                                     :readonly="viewMode"
-                                    :class="{'p-invalid': submitted && !product.name}" 
+                                    :class="{'p-invalid': submitted && !campaign.name}" 
                                 />
-                                <small class="p-error" v-if="submitted && !product.name">Το όνομα είναι υποχρεωτικό.</small>
+                                <small class="p-error" v-if="submitted && !campaign.name">Το όνομα είναι υποχρεωτικό.</small>
                             </div>
                         </div>
 
@@ -134,7 +134,7 @@
                                 <label for="category">Κατηγορία</label>
                                 <Dropdown 
                                     id="category" 
-                                    v-model="product.category" 
+                                    v-model="campaign.category" 
                                     :options="categories" 
                                     optionLabel="name"
                                     placeholder="Επιλέξτε Κατηγορία" 
@@ -145,23 +145,23 @@
 
                         <div class="col-12">
                             <div class="field">
-                                <label for="description">Περιγραφή Προϊόντος</label>
-                                <Textarea id="description" v-model="product.description" :readonly="viewMode" required rows="3" />
+                                <label for="description">Περιγραφή Καμπάνιας</label>
+                                <Textarea id="description" v-model="campaign.description" :readonly="viewMode" required rows="3" />
                             </div>
                         </div>
 
                         <div class="col-12 md:col-6">
                             <div class="field">
                                 <label for="targetAudience">Κοινό-Στόχος</label>
-                                <MultiSelect id="targetAudience" v-model="product.targetAudience" :options="audiences"
+                                <MultiSelect id="targetAudience" v-model="campaign.targetAudience" :options="audiences"
                                            placeholder="Επιλέξτε Κοινό" :disabled="viewMode" />
                             </div>
                         </div>
 
                         <div class="col-12 md:col-6">
                             <div class="field">
-                                <label for="budget">Budget (€)</label>
-                                <InputNumber id="budget" v-model="product.budget" mode="currency" currency="EUR"
+                                <label for="budget">Προϋπολογισμός (€)</label>
+                                <InputNumber id="budget" v-model="campaign.budget" mode="currency" currency="EUR"
                                            :readonly="viewMode" required />
                             </div>
                         </div>
@@ -169,7 +169,7 @@
                         <div class="col-12 md:col-6">
                             <div class="field">
                                 <label for="campaignDuration">Διάρκεια Καμπάνιας (ημέρες)</label>
-                                <InputNumber id="campaignDuration" v-model="product.campaignDuration" 
+                                <InputNumber id="campaignDuration" v-model="campaign.campaignDuration" 
                                            :readonly="viewMode" />
                             </div>
                         </div>
@@ -177,7 +177,7 @@
                         <div class="col-12 md:col-6">
                             <div class="field">
                                 <label for="status">Κατάσταση</label>
-                                <Dropdown id="status" v-model="product.status" :options="statuses" optionLabel="label"
+                                <Dropdown id="status" v-model="campaign.status" :options="statuses" optionLabel="label"
                                         placeholder="Επιλέξτε Κατάσταση" :disabled="viewMode" />
                             </div>
                         </div>
@@ -187,7 +187,7 @@
                                 <label for="requirements">Απαιτήσεις</label>
                                 <Textarea 
                                     id="requirements" 
-                                    v-model="product.requirements" 
+                                    v-model="campaign.requirements" 
                                     :readonly="viewMode" 
                                     rows="2" 
                                 />
@@ -205,20 +205,20 @@
                         />
                         <template v-else>
                             <Button label="Ακύρωση" icon="pi pi-times" text @click="hideDialog" />
-                            <Button label="Αποθήκευση" icon="pi pi-check" text @click="saveProduct" />
+                            <Button label="Αποθήκευση" icon="pi pi-check" text @click="saveCampaign" />
                         </template>
                     </template>
                 </Dialog>
 
                 <!-- Dialogs για διαγραφή -->
-                <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Επιβεβαίωση" :modal="true">
+                <Dialog v-model:visible="deleteCampaignDialog" :style="{ width: '450px' }" header="Επιβεβαίωση" :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span>Είστε σίγουροι ότι θέλετε να διαγράψετε το <b>{{ product.name }}</b>;</span>
+                        <span>Είστε σίγουροι ότι θέλετε να διαγράψετε την καμπάνια <b>{{ campaign.name }}</b>;</span>
                     </div>
                     <template #footer>
-                        <Button label="Όχι" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                        <Button label="Ναι" icon="pi pi-check" text @click="deleteProduct" />
+                        <Button label="Όχι" icon="pi pi-times" text @click="deleteCampaignDialog = false" />
+                        <Button label="Ναι" icon="pi pi-check" text @click="deleteCampaign" />
                     </template>
                 </Dialog>
             </div>
@@ -229,9 +229,8 @@
 <script>
 import { FilterMatchMode } from 'primevue/api';
 import { ref, onMounted, onBeforeMount } from 'vue';
-import { ProductService } from '@/service/ProductService';
 import { useToast } from 'primevue/usetoast';
-import FileUpload from 'primevue/fileupload';
+import CampaignService from '@/service/CampaignService';
 
 export default {
     props: {
@@ -243,12 +242,12 @@ export default {
     data() {
         return {
             toast: useToast(),
-            products: null,
-            productDialog: false,
-            deleteProductDialog: false,
-            deleteProductsDialog: false,
-            product: {},
-            selectedProducts: null,
+            campaigns: null,
+            campaignDialog: false,
+            deleteCampaignDialog: false,
+            deleteCampaignsDialog: false,
+            campaign: {},
+            selectedCampaigns: null,
             dt: null,
             filters: {},
             submitted: false,
@@ -283,117 +282,96 @@ export default {
     },
     computed: {
         dialogHeader() {
-            return this.viewMode ? 'Προβολή Προϊόντος' : 'Επεξεργασία Προϊόντος';
+            return this.viewMode ? 'Προβολή Καμπάνιας' : 'Επεξεργασία Καμπάνιας';
         }
     },
     methods: {
-        getBadgeSeverity(inventoryStatus) {
-            switch (inventoryStatus.toLowerCase()) {
-                case 'instock':
-                    return 'success';
-                case 'lowstock':
+        getBadgeSeverity(status) {
+            switch (status.toLowerCase()) {
+                case 'pending':
                     return 'warning';
-                case 'outofstock':
+                case 'active':
+                    return 'success';
+                case 'completed':
+                    return 'info';
+                case 'cancelled':
                     return 'danger';
                 default:
-                    return 'info';
+                    return null;
             }
         },
         formatCurrency(value) {
-            if (value == null) return '';
-            return new Intl.NumberFormat('el-GR', {
-                style: 'currency',
-                currency: 'EUR'
-            }).format(value);
+            return value.toLocaleString('el-GR', { style: 'currency', currency: 'EUR' });
         },
         formatDate(date) {
-            if (!date) return '';
             return new Date(date).toLocaleDateString('el-GR');
         },
         getStatusSeverity(status) {
             const statusObj = this.statuses.find(s => s.value === status);
-            return statusObj ? statusObj.severity : 'info';
+            return statusObj ? statusObj.severity : null;
         },
         openNew() {
-            this.product = {
-                id: null,
-                name: '',
-                description: '',
-                image: null,
-                category: null,
-                targetAudience: [],
-                budget: 0,
-                campaignDuration: 0,
+            this.campaign = {
                 status: 'PENDING',
+                category: null,
+                targetAudience: null,
                 requirements: '',
-                date: new Date().toISOString()
+                budget: 0,
+                campaignDuration: 30
             };
-            this.viewMode = false;
             this.submitted = false;
-            this.productDialog = true;
+            this.campaignDialog = true;
+            this.viewMode = false;
         },
         hideDialog() {
-            this.productDialog = false;
+            this.campaignDialog = false;
             this.submitted = false;
             this.viewMode = false;
         },
-        saveProduct() {
+        saveCampaign() {
             this.submitted = true;
 
-            if (this.product.name.trim()) {
-                if (this.product.id) {
-                    // Update existing product
-                    const index = this.findIndexById(this.product.id);
-                    if (index !== -1) {
-                        this.products[index] = {...this.product};
-                        this.toast.add({
-                            severity: 'success',
-                            summary: 'Επιτυχία',
-                            detail: 'Το προϊόν ενημερώθηκε',
-                            life: 3000
-                        });
-                    }
+            if (this.campaign.name?.trim()) {
+                if (this.campaign.id) {
+                    // Update existing campaign
+                    this.campaigns[this.findIndexById(this.campaign.id)] = this.campaign;
+                    this.toast.add({ severity: 'success', summary: 'Επιτυχία', detail: 'Η καμπάνια ενημερώθηκε', life: 3000 });
                 } else {
-                    // Create new product
-                    this.product.id = this.createId();
-                    this.product.date = new Date().toISOString();
-                    this.products.push({...this.product});
-                    this.toast.add({
-                        severity: 'success',
-                        summary: 'Επιτυχία',
-                        detail: 'Το προϊόν δημιουργήθηκε',
-                        life: 3000
-                    });
+                    // Create new campaign
+                    this.campaign.id = this.createId();
+                    this.campaign.date = new Date();
+                    this.campaigns.push(this.campaign);
+                    this.toast.add({ severity: 'success', summary: 'Επιτυχία', detail: 'Η καμπάνια δημιουργήθηκε', life: 3000 });
                 }
 
-                this.productDialog = false;
-                this.product = {};
+                this.campaignDialog = false;
+                this.campaign = {};
             }
         },
-        viewProduct(product) {
-            this.product = { ...product };
+        viewCampaign(campaign) {
+            this.campaign = { ...campaign };
+            this.campaignDialog = true;
             this.viewMode = true;
-            this.productDialog = true;
         },
-        editProduct(product) {
-            this.product = { ...product };
+        editCampaign(campaign) {
+            this.campaign = { ...campaign };
+            this.campaignDialog = true;
             this.viewMode = false;
-            this.productDialog = true;
         },
-        confirmDeleteProduct(editProduct) {
-            this.product = editProduct;
-            this.deleteProductDialog = true;
+        confirmDeleteCampaign(campaign) {
+            this.campaign = campaign;
+            this.deleteCampaignDialog = true;
         },
-        deleteProduct() {
-            this.products = this.products.filter((val) => val.id !== this.product.id);
-            this.deleteProductDialog = false;
-            this.product = {};
-            this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
+        deleteCampaign() {
+            this.campaigns = this.campaigns.filter(val => val.id !== this.campaign.id);
+            this.deleteCampaignDialog = false;
+            this.campaign = {};
+            this.toast.add({ severity: 'success', summary: 'Επιτυχία', detail: 'Η καμπάνια διαγράφηκε', life: 3000 });
         },
         findIndexById(id) {
             let index = -1;
-            for (let i = 0; i < this.products.length; i++) {
-                if (this.products[i].id === id) {
+            for (let i = 0; i < this.campaigns.length; i++) {
+                if (this.campaigns[i].id === id) {
                     index = i;
                     break;
                 }
@@ -409,16 +387,16 @@ export default {
             return id;
         },
         exportCSV() {
-            this.dt.exportCSV();
+            this.$refs.dt.exportCSV();
         },
         confirmDeleteSelected() {
-            this.deleteProductsDialog = true;
+            this.deleteCampaignsDialog = true;
         },
-        deleteSelectedProducts() {
-            this.products = this.products.filter((val) => !this.selectedProducts.includes(val));
-            this.deleteProductsDialog = false;
-            this.selectedProducts = null;
-            this.toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
+        deleteSelectedCampaigns() {
+            this.campaigns = this.campaigns.filter(val => !this.selectedCampaigns.includes(val));
+            this.deleteCampaignsDialog = false;
+            this.selectedCampaigns = null;
+            this.toast.add({ severity: 'success', summary: 'Επιτυχία', detail: 'Οι καμπάνιες διαγράφηκαν', life: 3000 });
         },
         initFilters() {
             this.filters = {
@@ -429,27 +407,36 @@ export default {
             const file = event.files[0];
             const reader = new FileReader();
             reader.onloadend = () => {
-                // Στην πραγματική εφαρμογή, εδώ θα κάναμε upload στον server
-                // Για τώρα απλά αποθηκεύουμε το όνομα του αρχείου
-                this.product.image = file.name;
-                this.$toast.add({
-                    severity: 'success',
-                    summary: 'Επιτυχία',
-                    detail: 'Η εικόνα μεταφορτώθηκε',
-                    life: 3000
-                });
+                this.campaign.image = reader.result;
+                this.toast.add({ severity: 'info', summary: 'Επιτυχία', detail: 'Η εικόνα μεταφορτώθηκε' });
             };
             reader.readAsDataURL(file);
-        },
+        }
     },
     beforeMount() {
         this.initFilters();
     },
     mounted() {
-        const productService = new ProductService();
-        productService.getProducts().then((data) => (
-            this.products = data));
-    },
+        CampaignService.getCampaigns().then(response => {
+            // Access the nested data array from the response
+            const campaignsData = response.data.data;
+            
+            // Transform category to match the expected format
+            this.campaigns = campaignsData.map(campaign => ({
+                ...campaign,
+                category: { name: campaign.category }  // Transform category to object format
+            }));
+        }).catch(error => {
+            console.error('Error loading campaigns:', error);
+            this.campaigns = []; // Initialize as empty array on error
+            this.toast.add({ 
+                severity: 'error', 
+                summary: 'Σφάλμα', 
+                detail: 'Δεν ήταν δυνατή η φόρτωση των καμπανιών', 
+                life: 3000 
+            });
+        });
+    }
 };
 </script>
 
@@ -521,4 +508,3 @@ export default {
     }
 }
 </style>
-  

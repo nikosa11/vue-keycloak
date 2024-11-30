@@ -29,6 +29,11 @@ const router = createRouter({
                     component: () => import('@/views/pages/home/Influencer2.vue') 
                 },
                 { 
+                    path: '/home/influencers',
+                    name: 'influencers',
+                    component: () => import('@/views/pages/home/Influencer.vue')
+                },
+                { 
                     path: '/proposal', 
                     name: 'proposal', 
                     component: () => import('@/views/pages/home/Proposal.vue') 
@@ -74,11 +79,6 @@ const router = createRouter({
                     component: () => import('@/views/pages/home/Profile.vue')
                 },
                 {
-                    path: '/home/influencers',
-                    name: 'influencers',
-                    component: () => import('@/views/pages/home/Influencer.vue')
-                },
-                {
                     path: '/blocks',
                     name: 'blocks',
                     component: () => import('@/views/utilities/Blocks.vue')
@@ -86,6 +86,11 @@ const router = createRouter({
                 {
                     path: '/home/crud',
                     name: 'projects',
+                    component: () => import('@/views/pages/home/Crud.vue')
+                },
+                {
+                    path: '/crud',
+                    name: 'crud',
                     component: () => import('@/views/pages/home/Crud.vue')
                 },
                 {
@@ -142,6 +147,7 @@ const router = createRouter({
         },
         {
             path: '/messaging',
+            name: 'messaging',
             component: () => import('@/views/pages/messaging/Chat.vue'),
             meta: {
                 requiresAuth: true

@@ -36,11 +36,13 @@
       },
       buttonClass: {
         type: String,
-        required: true
+        required: false,
+        default: ''
       },
       buttonName: {
         type: String,
-        required: true
+        required: false,
+        default: ''
       },
       showButton: {
         type: Boolean,
@@ -115,4 +117,3 @@
     background-color: #e76640;
   }
   </style>
-  

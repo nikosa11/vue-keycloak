@@ -25,7 +25,7 @@
 
                 <!-- Κάρτες Influencers -->
                 <div class="grid">
-                    <div v-for="influencer in dummyInfluencers" :key="influencer.id" 
+                    <div v-for="influencer in filteredInfluencers" :key="influencer.id" 
                          class="col-12 md:col-6 lg:col-4 xl:col-3">
                         <div class="card m-2 border-round-2xl shadow-3 hover:shadow-5 transition-duration-300 h-full">
                             <div class="flex flex-column align-items-center text-center mb-3">
@@ -81,91 +81,42 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue';
+import CampaignService from '@/service/CampaignService';
+
 export default {
     data() {
         return {
+            portfolio: [],
+            selectedCategory: null,
+            loading: false,
             filters: {
                 global: null
             },
-            selectedCategory: null,
             categories: [
-                { name: 'Όλες οι κατηγορίες' },
-                { name: 'Music & Entertainment' },
-                { name: 'Lifestyle & TV' },
-                { name: 'Fashion & Beauty' },
-                { name: 'Food & Cooking' },
-                { name: 'Fitness & Health' }
-            ],
-            loading: false,
-            dummyInfluencers: [
-                {
-                    id: 1,
-                    name: 'Ελένη Παπαδοπούλου',
-                    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
-                    category: 'Fashion & Beauty',
-                    rating: 5,
-                    followers: 850000,
-                    engagement: 4.8,
-                    price: 2500,
-                    recentBrands: ['Sephora', 'MAC', 'NYX'],
-                    socialMedia: {
-                        instagram: '@eleni_style',
-                        youtube: '@eleni_beauty',
-                        tiktok: '@eleni_official'
-                    }
-                },
-                {
-                    id: 2,
-                    name: 'Γιώργος Αλεξίου',
-                    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e',
-                    category: 'Fitness & Health',
-                    rating: 4,
-                    followers: 620000,
-                    engagement: 5.2,
-                    price: 1800,
-                    recentBrands: ['Nike', 'MyProtein', 'Adidas'],
-                    socialMedia: {
-                        instagram: '@george_fitness',
-                        youtube: '@george_workout'
-                    }
-                },
-                {
-                    id: 3,
-                    name: 'Μαρία Κωνσταντίνου',
-                    image: 'https://images.unsplash.com/photo-1567532939604-b6b5b0db2604',
-                    category: 'Food & Cooking',
-                    rating: 5,
-                    followers: 420000,
-                    engagement: 6.1,
-                    price: 1500,
-                    recentBrands: ['Kitchen Aid', 'Lidl', 'AB'],
-                    socialMedia: {
-                        instagram: '@maria_cooks',
-                        youtube: '@maria_recipes'
-                    }
-                },
-                {
-                    id: 4,
-                    name: 'Νίκος Δημητρίου',
-                    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d',
-                    category: 'Music & Entertainment',
-                    rating: 4,
-                    followers: 980000,
-                    engagement: 4.5,
-                    price: 3000,
-                    recentBrands: ['Spotify', 'Sony Music', 'JBL'],
-                    socialMedia: {
-                        instagram: '@nikos_music',
-                        youtube: '@nikos_official',
-                        tiktok: '@nikos_beats'
-                    }
-                }
+                { name: 'Όλες οι κατηγορίες', code: 'all' },
+                { name: 'Music & Entertainment', code: 'music' },
+                { name: 'Lifestyle & TV', code: 'lifestyle' },
+                { name: 'Fashion & Beauty', code: 'fashion' },
+                { name: 'Food & Cooking', code: 'food' },
+                { name: 'Fitness & Health', code: 'fitness' }
             ]
-        }
+        };
     },
     methods: {
+        async loadPortfolio() {
+            try {
+                this.loading = true;
+                const response = await CampaignService.getPortfolio();
+                this.portfolio = response.data;
+            } catch (error) {
+                console.error('Error loading portfolio:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
         formatNumber(num) {
-            return new Intl.NumberFormat().format(num);
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         },
         getSocialIcon(platform) {
             const icons = {
@@ -176,15 +127,17 @@ export default {
             return icons[platform.toLowerCase()] || 'link';
         },
         sortByEngagement() {
-            this.dummyInfluencers.sort((a, b) => b.engagement - a.engagement);
+            this.portfolio.sort((a, b) => b.engagement - a.engagement);
         },
         sortByRating() {
-            this.dummyInfluencers.sort((a, b) => b.rating - a.rating);
+            this.portfolio.sort((a, b) => b.rating - a.rating);
         }
     },
     computed: {
         filteredInfluencers() {
-            let filtered = [...this.dummyInfluencers];
+            if (!this.portfolio) return [];
+            
+            let filtered = [...this.portfolio];
             
             if (this.filters.global) {
                 const searchTerm = this.filters.global.toLowerCase();
@@ -193,13 +146,18 @@ export default {
                     inf.category.toLowerCase().includes(searchTerm)
                 );
             }
-
-            if (this.selectedCategory && this.selectedCategory.name !== 'Όλες οι κατηγορίες') {
-                filtered = filtered.filter(inf => inf.category === this.selectedCategory.name);
+            
+            if (this.selectedCategory && this.selectedCategory.code !== 'all') {
+                filtered = filtered.filter(inf => 
+                    inf.category === this.selectedCategory.code
+                );
             }
-
+            
             return filtered;
         }
+    },
+    mounted() {
+        this.loadPortfolio();
     }
 }
 </script>
@@ -263,4 +221,4 @@ img {
         transform: translateY(-5px);
     }
 }
-</style> 
+</style>

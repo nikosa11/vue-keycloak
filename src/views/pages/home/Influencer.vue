@@ -248,6 +248,7 @@
               label="Προβολή Προφίλ" 
               icon="pi pi-user" 
               class="p-button-outlined"
+              @click="navigateToProfile(selectedInfluencer.id)"
             />
             <Button 
               :label="`Συνεργασία - ${formatCurrency(selectedInfluencer.price)}`"
@@ -262,124 +263,115 @@
 </template>
 
 <script>
-import { CustomerService } from '@/service/CustomerService';
 import { FilterMatchMode, FilterOperator } from 'primevue/api';
-import Rating from 'primevue/rating';
+import { useToast } from 'primevue/usetoast';
+import InfluencerService from '@/service/InfluencerService';
 
 export default {
-  components: {
-    Rating
-  },
-  data() {
-    return {
-      isReady: false,
-      influencers: [],
-      filters: {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        name: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
+    data() {
+        return {
+            loading: true,
+            isReady: false,
+            influencers: [],
+            selectedInfluencer: null,
+            dialogVisible: false,
+            categories: [
+                'Music & Entertainment',
+                'Fashion & Beauty',
+                'Lifestyle',
+                'Travel',
+                'Food',
+                'Sports',
+                'Technology'
+            ],
+            filters: {
+                global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+                name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+                category: { value: null, matchMode: FilterMatchMode.EQUALS },
+                followers: { value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL },
+                engagement: { value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL },
+                price: { 
+                    operator: FilterOperator.AND,
+                    constraints: [
+                        { value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL },
+                        { value: null, matchMode: FilterMatchMode.LESS_THAN_OR_EQUAL }
+                    ]
+                },
+                rating: { value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }
+            }
+        };
+    },
+    methods: {
+        async fetchInfluencers() {
+            try {
+                const response = await InfluencerService.getInfluencers();
+                this.influencers = response.data.data;
+            } catch (error) {
+                console.error('Error fetching influencers:', error);
+                this.toast.add({
+                    severity: 'error',
+                    summary: 'Σφάλμα',
+                    detail: 'Αποτυχία φόρτωσης influencers',
+                    life: 3000
+                });
+            } finally {
+                this.loading = false;
+                this.isReady = true;
+            }
         },
-        category: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
+        formatCurrency(value) {
+            return new Intl.NumberFormat('el-GR', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(value);
         },
-        followers: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
+        formatNumber(value) {
+            if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+                return (value / 1000).toFixed(1) + 'K';
+            }
+            return value;
         },
-        engagement: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
+        clearAllFilters() {
+            this.filters = {
+                global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+                name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+                category: { value: null, matchMode: FilterMatchMode.EQUALS },
+                followers: { value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL },
+                engagement: { value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL },
+                price: { 
+                    operator: FilterOperator.AND,
+                    constraints: [
+                        { value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL },
+                        { value: null, matchMode: FilterMatchMode.LESS_THAN_OR_EQUAL }
+                    ]
+                },
+                rating: { value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }
+            };
         },
-        price: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.BETWEEN }]
+        navigateToProfile(influencerId) {
+            this.dialogVisible = false; // Close the dialog
+            this.$router.push({
+                path: '/home/profile2',
+                query: { 
+                    userId: influencerId,
+                    type: 'influencer'
+                }
+            });
         },
-        rating: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
+        openInfluencerDialog(event) {
+            this.selectedInfluencer = event.data;
+            this.dialogVisible = true;
         }
-      },
-      loading: true,
-      selectedInfluencer: null,
-      dialogVisible: false,
-      categories: [
-        'Music & Entertainment',
-        'Lifestyle & TV',
-        'Fashion & Beauty',
-        'Food & Cooking',
-        'Lifestyle & Fashion',
-        'Fitness & Health',
-        'Lifestyle & Acting',
-        'Home & Decoration'
-      ]
-    };
-  },
-  async created() {
-    try {
-      const service = new CustomerService();
-      const response = await service.getCustomersLarge();
-      this.influencers = response.data;
-      this.loading = false;
-      this.isReady = true;
-    } catch (error) {
-      console.error('Error loading influencers:', error);
-      this.loading = false;
+    },
+    setup() {
+        const toast = useToast();
+        return { toast }
+    },
+    mounted() {
+        this.fetchInfluencers();
     }
-  },
-  methods: {
-    formatCurrency(value) {
-      return new Intl.NumberFormat('el-GR', {
-        style: 'currency',
-        currency: 'EUR'
-      }).format(value);
-    },
-    formatNumber(value) {
-      if (value >= 1000000) {
-        return (value / 1000000).toFixed(1) + 'M';
-      } else if (value >= 1000) {
-        return (value / 1000).toFixed(1) + 'K';
-      }
-      return value;
-    },
-    clearAllFilters() {
-      this.filters = {
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        name: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
-        },
-        category: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
-        },
-        followers: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
-        },
-        engagement: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
-        },
-        price: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.BETWEEN }]
-        },
-        rating: { 
-          operator: FilterOperator.AND,
-          constraints: [{ value: null, matchMode: FilterMatchMode.GREATER_THAN_OR_EQUAL }]
-        }
-      };
-      if (this.$refs.dt) {
-        this.$refs.dt.reset();
-      }
-    },
-    openInfluencerDialog(event) {
-      this.selectedInfluencer = event.data;
-      this.dialogVisible = true;
-    }
-  }
 };
 </script>
 
@@ -574,133 +566,6 @@ export default {
   }
 }
 
-/* Προσθήκη responsive styles */
-@media screen and (max-width: 768px) {
-  .p-input-icon-left .p-inputtext {
-    min-width: 200px;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .p-input-icon-left .p-inputtext {
-    min-width: 150px;
-  }
-}
-
-:deep(.p-datatable-header) {
-  padding: 1rem;
-  background-color: var(--surface-0);
-}
-
-:deep(.p-button-sm) {
-  font-size: 0.875rem;
-  padding: 0.4rem 0.8rem;
-}
-
-:deep(.p-inputtext-sm) {
-  font-size: 0.875rem;
-  padding: 0.4rem 0.8rem;
-}
-
-.p-column-filter {
-  width: 100%;
-  
-  &.p-inputnumber {
-    .p-inputnumber-input {
-      width: 100%;
-    }
-  }
-}
-
-/* Στυλ για το DataTable */
-:deep(.p-datatable) {
-  border-radius: 1rem;
-  overflow: hidden;
-  
-  .p-datatable-header {
-    border-radius: 1rem 1rem 0 0;
-    background: var(--surface-section);
-    border: 1px solid var(--surface-border);
-    padding: 1.25rem;
-  }
-  
-  .p-datatable-thead > tr > th {
-    &:first-child {
-      border-top-left-radius: 0.8rem;
-    }
-    &:last-child {
-      border-top-right-radius: 0.8rem;
-    }
-  }
-  
-  .p-datatable-tbody > tr:last-child > td {
-    &:first-child {
-      border-bottom-left-radius: 0.8rem;
-    }
-    &:last-child {
-      border-bottom-right-radius: 0.8rem;
-    }
-  }
-}
-
-/* Στυλ για τα inputs και buttons */
-:deep(.p-inputtext),
-:deep(.p-dropdown),
-:deep(.p-multiselect),
-:deep(.p-button) {
-  border-radius: 1rem !important;
-}
-
-:deep(.p-tag) {
-  border-radius: 2rem;
-  padding: 0.4rem 1rem;
-}
-
-:deep(.p-progressbar) {
-  border-radius: 1rem;
-  overflow: hidden;
-  
-  .p-progressbar-value {
-    border-radius: 1rem;
-  }
-}
-
-/* Dialog στυλ */
-:deep(.p-dialog) {
-  border-radius: 1.5rem;
-  overflow: hidden;
-  
-  .p-dialog-header {
-    border-top-left-radius: 1.5rem;
-    border-top-right-radius: 1.5rem;
-  }
-  
-  .p-dialog-content {
-    border-bottom-left-radius: 1.5rem;
-    border-bottom-right-radius: 1.5rem;
-  }
-}
-
-/* Column filter menu */
-:deep(.p-column-filter-overlay) {
-  border-radius: 1rem;
-  .p-column-filter-constraint {
-    border-radius: 0.8rem;
-  }
-}
-
-/* Rating stars */
-:deep(.p-rating) {
-  .p-rating-item {
-    border-radius: 50%;
-    
-    &.p-rating-item-active {
-      transform: scale(1.1);
-      transition: transform 0.2s ease;
-    }
-  }
-}
-
 /* Search input */
 .p-input-icon-left {
   .p-inputtext {
@@ -758,4 +623,3 @@ export default {
   }
 }
 </style>
-  

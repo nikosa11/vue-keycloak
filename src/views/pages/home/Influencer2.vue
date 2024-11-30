@@ -81,10 +81,11 @@
   import Button from 'primevue/button';
   import Card from 'primevue/card';
   import Tag from 'primevue/tag';
-  
+  import InfluencerService from '@/service/InfluencerService';
+
   import 'swiper/css';
   import 'swiper/css/pagination';
-  
+
   export default {
     components: {
       Swiper,
@@ -97,44 +98,7 @@
       return {
         autoplay: Autoplay,
         pagination: Pagination,
-        influencers: [
-          {
-            id: 1,
-            name: 'Maria Papadopoulou',
-            category: 'Fashion',
-            followers: 150000,
-            engagement: 7.5,
-            description: 'Expert in fashion and lifestyle.',
-            image: 'https://picsum.photos/200?random=1'
-          },
-          {
-            id: 2,
-            name: 'Nikos Oikonomou',
-            category: 'Travel',
-            followers: 200000,
-            engagement: 6.0,
-            description: 'Exploring new destinations worldwide.',
-            image: 'https://picsum.photos/200?random=2'
-          },
-          {
-            id: 3,
-            name: 'Elena Kosta',
-            category: 'Fitness',
-            followers: 180000,
-            engagement: 8.2,
-            description: 'Fitness trainer and wellness coach.',
-            image: 'https://picsum.photos/200?random=3'
-          },
-          {
-            id: 4,
-            name: 'Giorgos Dimitriou',
-            category: 'Technology',
-            followers: 250000,
-            engagement: 5.5,
-            description: 'Tech enthusiast and gadget reviewer.',
-            image: 'https://picsum.photos/200?random=4'
-          }
-        ]
+        influencers: []
       };
     },
     methods: {
@@ -143,10 +107,68 @@
           path: '/home/profile2',
           query: { 
             userId: influencerId,
-            type: 'influencer' // Προσθέτουμε τύπο για να ξέρουμε ότι είναι influencer profile
+            type: 'influencer'
           }
         });
+      },
+      async fetchInfluencers() {
+        try {
+          const response = await InfluencerService.getCarouselInfluencers();
+          this.influencers = response.data.map(influencer => ({
+            id: influencer.id,
+            name: influencer.name,
+            category: influencer.category,
+            followers: influencer.followers,
+            engagement: influencer.engagement,
+            description: influencer.description,
+            image: influencer.image || 'https://picsum.photos/200?random=' + influencer.id
+          }));
+        } catch (error) {
+          console.error('Error fetching influencers:', error);
+          // Fallback data in case of error
+          this.influencers = [
+            {
+              id: 1,
+              name: 'Maria Papadopoulou',
+              category: 'Fashion',
+              followers: 150000,
+              engagement: 7.5,
+              description: 'Expert in fashion and lifestyle.',
+              image: 'https://picsum.photos/200?random=1'
+            },
+            {
+              id: 2,
+              name: 'Nikos Oikonomou',
+              category: 'Travel',
+              followers: 200000,
+              engagement: 6.0,
+              description: 'Exploring new destinations worldwide.',
+              image: 'https://picsum.photos/200?random=2'
+            },
+            {
+              id: 3,
+              name: 'Elena Kosta',
+              category: 'Fitness',
+              followers: 180000,
+              engagement: 8.2,
+              description: 'Fitness trainer and wellness coach.',
+              image: 'https://picsum.photos/200?random=3'
+            },
+            {
+              id: 4,
+              name: 'Giorgos Dimitriou',
+              category: 'Technology',
+              followers: 250000,
+              engagement: 5.5,
+              description: 'Tech enthusiast and gadget reviewer.',
+              image: 'https://picsum.photos/200?random=4'
+            }
+          ];
+        }
       }
+    },
+    mounted() {
+      this.fetchInfluencers();
     }
   };
   </script>

@@ -77,78 +77,23 @@
 </template>
 
 <script>
+import { onMounted } from 'vue';
+import { useToast } from 'primevue/usetoast';
+import InfluencerService from '@/service/InfluencerService';
+
 export default {
   data() {
     return {
-      loading: false,
-      basicStats: [
-        {
-          title: 'Συνολικοί Influencers',
-          value: '1,286',
-          icon: 'pi pi-users',
-          trend: 12
-        },
-        {
-          title: 'Συνολικό Reach',
-          value: '8.5M',
-          icon: 'pi pi-globe',
-          trend: 8
-        },
-        {
-          title: 'Μέσο Engagement',
-          value: '4.2%',
-          icon: 'pi pi-heart',
-          trend: -2
-        },
-        {
-          title: 'Ενεργές Καμπάνιες',
-          value: '42',
-          icon: 'pi pi-megaphone',
-          trend: 15
-        }
-      ],
-      topInfluencers: [
-        {
-          name: 'Μαρία Παπαδοπούλου',
-          platform: 'Instagram',
-          followers: '520K',
-          engagement: 5.8
-        },
-        {
-          name: 'Γιώργος Δημητρίου',
-          platform: 'YouTube',
-          followers: '850K',
-          engagement: 4.2
-        },
-        {
-          name: 'Ελένη Κωνσταντίνου',
-          platform: 'TikTok',
-          followers: '1.2M',
-          engagement: 7.1
-        },
-        {
-          name: 'Νίκος Αλεξίου',
-          platform: 'Instagram',
-          followers: '320K',
-          engagement: 6.3
-        }
-      ],
+      loading: true,
+      basicStats: [],
+      topInfluencers: [],
       platformPerformance: {
-        labels: ['Instagram', 'YouTube', 'TikTok', 'Facebook'],
-        datasets: [{
-          label: 'Followers (M)',
-          data: [2.5, 1.8, 3.2, 1.1],
-          backgroundColor: ['#42A5F5', '#FF4081', '#7E57C2', '#66BB6A']
-        }]
+        labels: [],
+        datasets: []
       },
       engagementData: {
-        labels: ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιουν'],
-        datasets: [{
-          label: 'Μέσο Engagement Rate',
-          data: [4.2, 4.5, 4.8, 4.3, 4.6, 5.0],
-          borderColor: '#42A5F5',
-          tension: 0.4
-        }]
+        labels: [],
+        datasets: []
       },
       barOptions: {
         plugins: {
@@ -165,12 +110,113 @@ export default {
         }
       }
     }
+  },
+  methods: {
+    async fetchStats() {
+      try {
+        const response = await InfluencerService.getBasicStats();
+        const data = response.data;
+        
+        // Update all stats
+        this.basicStats = data.basicStats;
+        this.topInfluencers = data.topInfluencers;
+        this.platformPerformance = data.platformPerformance;
+        this.engagementData = data.engagementData;
+        
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+        this.toast.add({
+          severity: 'error',
+          summary: 'Σφάλμα',
+          detail: 'Αποτυχία φόρτωσης στατιστικών',
+          life: 3000
+        });
+        
+        // Fallback data
+        this.basicStats = [
+          {
+            title: 'Συνολικοί Influencers',
+            value: '1,286',
+            icon: 'pi pi-users',
+            trend: 12
+          },
+          {
+            title: 'Συνολικό Reach',
+            value: '8.5M',
+            icon: 'pi pi-globe',
+            trend: 8
+          },
+          {
+            title: 'Μέσο Engagement',
+            value: '4.2%',
+            icon: 'pi pi-heart',
+            trend: -2
+          },
+          {
+            title: 'Ενεργές Καμπάνιες',
+            value: '42',
+            icon: 'pi pi-megaphone',
+            trend: 15
+          }
+        ];
+        this.topInfluencers = [
+          {
+            name: 'Μαρία Παπαδοπούλου',
+            platform: 'Instagram',
+            followers: '520K',
+            engagement: 5.8
+          },
+          {
+            name: 'Γιώργος Δημητρίου',
+            platform: 'YouTube',
+            followers: '850K',
+            engagement: 4.2
+          },
+          {
+            name: 'Ελένη Κωνσταντίνου',
+            platform: 'TikTok',
+            followers: '1.2M',
+            engagement: 7.1
+          },
+          {
+            name: 'Νίκος Αλεξίου',
+            platform: 'Instagram',
+            followers: '320K',
+            engagement: 6.3
+          }
+        ];
+        this.platformPerformance = {
+          labels: ['Instagram', 'YouTube', 'TikTok', 'Facebook'],
+          datasets: [{
+            label: 'Followers (M)',
+            data: [2.5, 1.8, 3.2, 1.1],
+            backgroundColor: ['#42A5F5', '#FF4081', '#7E57C2', '#66BB6A']
+          }]
+        };
+        this.engagementData = {
+          labels: ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μάι', 'Ιουν'],
+          datasets: [{
+            label: 'Μέσο Engagement Rate',
+            data: [4.2, 4.5, 4.8, 4.3, 4.6, 5.0],
+            borderColor: '#42A5F5',
+            tension: 0.4
+          }]
+        };
+      } finally {
+        this.loading = false;
+      }
+    }
+  },
+  setup() {
+    const toast = useToast();
+    return { toast }
+  },
+  mounted() {
+    this.fetchStats();
   }
 }
 </script>
-  
-  <style scoped>
-  /* Προσθήκη προσαρμοσμένων στυλ για το dashboard */
-  
-  </style>
-  
+
+<style scoped>
+/* Προσθήκη προσαρμοσμένων στυλ για το dashboard */
+</style>

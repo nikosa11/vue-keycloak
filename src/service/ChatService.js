@@ -1,52 +1,19 @@
-export class ChatService {
+import apiClient from './ApiClient';
+
+const ChatService = {
     async getChats() {
-        try {
-            const response = await fetch('/demo/data/chats.json');
-            const result = await response.json();
-            return result.data;
-        } catch (error) {
-            console.error('Error loading chats:', error);
-            throw error;
-        }
-    }
+        const response = await apiClient.get('/chat/messages');
+        return response.data.data;
+    },
 
-    async getChatMessages(chatId) {
-        return this.getChats()
-            .then(chats => {
-                const chat = chats.find(c => c.id === chatId);
-                return chat ? chat.messages : [];
-            });
-    }
+    async sendMessage(message) {
+        return apiClient.post('/chat/send', message);
+    },
 
-    async sendMessage(chatId, message) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    id: Date.now(),
-                    text: message.text,
-                    timestamp: new Date().toISOString(),
-                    sent: true
-                });
-            }, 500);
-        });
+    async getUnreadCount() {
+        const response = await apiClient.get('/chat/unread');
+        return response.data.unread_count;
     }
+};
 
-    async uploadFile(chatId, file) {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const response = await fetch(`/api/chats/${chatId}/files`, {
-            method: 'POST',
-            body: formData
-        });
-        return response.json();
-    }
-
-    async markAsRead(chatId) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(true);
-            }, 300);
-        });
-    }
-} 
+export default ChatService;

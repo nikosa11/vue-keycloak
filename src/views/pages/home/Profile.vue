@@ -43,22 +43,22 @@
       <div class="content__header">
         <h1 class="button__text">Your Plan</h1>
       </div>
-      <div class="package-container">
+      <div class="package-container" v-if="subscriptionData.currentPlan">
         <SubscriptionPlan 
-          :planName="currentPlan.name"
-          :price="currentPlan.price"
-          :features="currentPlan.features"
-          :planClass="currentPlan.class"
+          :planName="subscriptionData.currentPlan.name || ''"
+          :price="subscriptionData.currentPlan.price || ''"
+          :features="subscriptionData.currentPlan.features || []"
+          :planClass="subscriptionData.currentPlan.class || 'basic'"
           :showButton="false"
         />
       </div>
-      <div v-if="showOptions">
+      <div v-if="showOptions && subscriptionData.availablePlans.length > 0">
         <div class="content__header">
           <h1 class="button__text">Subscription Options</h1>
         </div>
         <div class="package-container">
           <SubscriptionPlan 
-            v-for="(plan, index) in availablePlans"
+            v-for="(plan, index) in subscriptionData.availablePlans"
             :key="index"
             :planName="plan.name"
             :price="plan.price"
@@ -67,6 +67,7 @@
             :buttonName="getButtonName(plan.price)"
             :buttonClass="plan.buttonClass"
             :showButton="true"
+            @upgrade="upgradePlan(plan.name)"
           />
         </div>
       </div>
@@ -103,9 +104,10 @@
 <script>
 import { useToast } from 'primevue/usetoast';
 import { useStore } from 'vuex';
-import { ApiService } from '@/common/apiService.js'
 import { useRouter } from 'vue-router';
+import { ApiService } from '@/common/apiService.js'
 import SubscriptionPlan from '@/views/pages/home/SubscriptionPlan.vue';
+import SubscriptionService from '@/service/SubscriptionService';
 
 export default {
   components: {
@@ -115,27 +117,16 @@ export default {
     return {
       showOptions: false,
       userData: {},
-      availablePlans: [
-        {
-          name: "Professional",
-          price: "$239.99",
-          features: ["Basic +", "Landing Pages", "Pop-up Forms", "Premium Support"],
-          class: "professional",
-          buttonClass: "button2",
+      subscriptionData: {
+        currentPlan: {
+          name: '',
+          price: '',
+          features: [],
+          class: 'basic',
+          buttonClass: '',
+          buttonName: ''
         },
-        {
-          name: "Master",
-          price: "$359.99",
-          features: ["Professional +", "Marketing", "Instagram Ads", "Facebook Ads"],
-          class: "master",
-          buttonClass: "button3",
-        }
-      ],
-      currentPlan: {
-        name: "Basic",
-        price: "$319.99",
-        features: ["Basic +", "Landing Pages", "Pop-up Forms", "Premium Support"],
-        class: "basic",
+        availablePlans: []
       }
     };
   },
@@ -143,11 +134,9 @@ export default {
     changePassword() {
       this.router.push('/auth/changePassword');
     },
-    onUpload() {
-      this.toast.add({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
-    },
     getButtonName(price) {
-      const userPrice = parseFloat(this.currentPlan.price.replace('$', ''));
+      if (!this.subscriptionData.currentPlan?.price) return 'Upgrade';
+      const userPrice = parseFloat(this.subscriptionData.currentPlan.price.replace('$', ''));
       const planPrice = parseFloat(price.replace('$', ''));
       return planPrice > userPrice ? 'Upgrade' : 'Downgrade';
     },
@@ -165,13 +154,41 @@ export default {
         localStorage.removeItem('username');
         this.router.push('/');
       }
+    },
+    async fetchSubscriptionPlans() {
+      try {
+        const response = await SubscriptionService.getSubscriptionPlans();
+        if (response.data.subscriptionData) {
+          this.subscriptionData = response.data.subscriptionData;
+        }
+      } catch (error) {
+        console.error('Error fetching subscription plans:', error);
+        this.toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to load subscription plans', life: 3000 });
+      }
+    },
+    async upgradePlan(planName) {
+      try {
+        const response = await SubscriptionService.upgradePlan(planName);
+        if (response.data.success) {
+          this.toast.add({ severity: 'success', summary: 'Success', detail: `Successfully upgraded to ${planName} plan`, life: 3000 });
+          // Update current plan
+          const newPlan = [...this.subscriptionData.availablePlans].find(p => p.name === planName);
+          if (newPlan) {
+            this.subscriptionData.currentPlan = { ...newPlan };
+          }
+        }
+      } catch (error) {
+        console.error('Error upgrading plan:', error);
+        this.toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to upgrade plan. Please try again.', life: 3000 });
+      }
     }
   },
-  created() {
+  async created() {
     this.toast = useToast();
     this.router = useRouter();
     this.apiService = new ApiService();
-    this.fetchUserData();
+    await this.fetchUserData();
+    await this.fetchSubscriptionPlans();
   }
 };
 </script>

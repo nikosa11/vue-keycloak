@@ -1,54 +1,45 @@
 <template>
-    <div class="grid">
-        <div class="col-12">
-            <div class="card">
-                <div class="flex justify-content-between align-items-center mb-5">
-                    <div class="flex align-items-center gap-2">
-                        <Button 
-                            icon="pi pi-home" 
-                            rounded 
-                            outlined
-                            tooltip="Επιστροφή στην αρχική"
-                            :tooltipOptions="{ position: 'bottom' }"
-                            @click="goHome"
-                        />
-                        <h5 class="m-0">Ημερολόγιο</h5>
-                    </div>
-                    <div class="flex align-items-center gap-2">
-                        <Button icon="pi pi-plus" label="Νέο Event" @click="openNewEventDialog" severity="success" rounded />
-                        <Button icon="pi pi-filter" label="Φίλτρα" @click="toggleFilterSidebar" text rounded />
-                    </div>
-                </div>
-
-                <FullCalendar 
-                    ref="fullCalendar"
-                    :options="calendarOptions"
-                    class="p-fluid"
+    <div class="card">
+        <div class="flex flex-column md:flex-row justify-content-between gap-3 mb-3">
+            <div class="flex align-items-center gap-2">
+                <Button
+                    icon="pi pi-arrow-left"
+                    outlined
+                    tooltip="Επιστροφή στην αρχική"
+                    :tooltipOptions="{ position: 'bottom' }"
+                    @click="goHome"
                 />
+                <h5 class="m-0">Ημερολόγιο</h5>
+            </div>
+            <div class="flex align-items-center gap-2">
+                <Button icon="pi pi-plus" label="Νέο Event" @click="openNewEventDialog" severity="success" rounded />
+                <Button icon="pi pi-filter" label="Φίλτρα" @click="toggleFilterSidebar" text rounded />
             </div>
         </div>
 
-        <!-- Dialog για νέο event -->
-        <Dialog v-model:visible="eventDialog" :style="{ width: '450px' }" :header="isNewEvent ? 'Νέο Event' : 'Επεξεργασία Event'" :modal="true" class="p-fluid">
+        <FullCalendar :options="calendarOptions" />
+
+        <!-- Dialog για δημιουργία/επεξεργασία event -->
+        <Dialog v-model:visible="eventDialog" :style="{ width: '450px' }" header="Λεπτομέρειες Event" :modal="true" class="p-fluid">
             <div class="field">
                 <label for="title">Τίτλος</label>
                 <InputText id="title" v-model="event.title" required autofocus class="rounded-input" />
             </div>
             <div class="field">
                 <label for="start">Έναρξη</label>
-                <Calendar id="start" v-model="event.start" :showTime="true" class="rounded-input" />
+                <Calendar id="start" v-model="event.start" showTime class="rounded-input" />
             </div>
             <div class="field">
                 <label for="end">Λήξη</label>
-                <Calendar id="end" v-model="event.end" :showTime="true" class="rounded-input" />
+                <Calendar id="end" v-model="event.end" showTime class="rounded-input" />
             </div>
             <div class="field">
                 <label for="description">Περιγραφή</label>
                 <Textarea id="description" v-model="event.description" rows="3" class="rounded-input" />
             </div>
             <div class="field">
-                <label for="color">Χρώμα</label>
-                <Dropdown id="color" v-model="event.color" :options="colors" optionLabel="name" optionValue="value" class="rounded-input" />
+                <label for="location">Τοποθεσία</label>
+                <InputText id="location" v-model="event.location" class="rounded-input" />
             </div>
             <div class="field-checkbox">
                 <Checkbox id="allDay" v-model="event.allDay" :binary="true" />
@@ -56,13 +47,14 @@
             </div>
             <template #footer>
                 <div class="flex justify-content-between">
-                    <Button v-if="!isNewEvent" 
-                            label="Διαγραφή" 
-                            icon="pi pi-trash" 
-                            severity="danger" 
-                            text 
-                            rounded 
-                            @click="deleteEvent" />
+                    <Button 
+                        v-if="!isNewEvent" 
+                        label="Διαγραφή" 
+                        icon="pi pi-trash" 
+                        severity="danger" 
+                        text 
+                        rounded 
+                        @click="deleteEventDialog = true" />
                     <div>
                         <Button label="Ακύρωση" 
                                 icon="pi pi-times" 
@@ -80,8 +72,30 @@
             </template>
         </Dialog>
 
+        <!-- Dialog για διαγραφή event -->
+        <Dialog v-model:visible="deleteEventDialog" :style="{ width: '450px' }" header="Διαγραφή Event" :modal="true" class="p-fluid">
+            <div class="field">
+                <p>Είσαι σίγουρος ότι θέλεις να διαγράψεις το event {{ selectedEvent?.title }};</p>
+            </div>
+            <template #footer>
+                <div class="flex justify-content-between">
+                    <Button label="Ακύρωση" 
+                            icon="pi pi-times" 
+                            text 
+                            rounded 
+                            @click="hideDeleteEventDialog" 
+                            class="mr-2" />
+                    <Button label="Διαγραφή" 
+                            icon="pi pi-trash" 
+                            severity="danger" 
+                            rounded 
+                            @click="deleteEvent" />
+                </div>
+            </template>
+        </Dialog>
+
         <!-- Sidebar για φίλτρα -->
-        <Sidebar v-model:visible="filterSidebarVisible" position="right" :baseZIndex="1000" class="p-sidebar-sm">
+        <Sidebar v-model:visible="filterSidebar" position="right" :baseZIndex="1000" class="p-sidebar-sm">
             <h3>Φίλτρα Ημερολογίου</h3>
             <div class="field-checkbox" v-for="category in categories" :key="category.id">
                 <Checkbox :id="category.id" v-model="category.checked" :binary="true" />
@@ -91,218 +105,145 @@
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useToast } from 'primevue/usetoast';
+import calendarService from '@/service/CalendarService';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import elLocale from '@fullcalendar/core/locales/el';
-import { useRouter } from 'vue-router';
 
-export default {
-    components: {
-        FullCalendar
+const router = useRouter();
+const toast = useToast();
+const events = ref([]);
+const eventDialog = ref(false);
+const deleteEventDialog = ref(false);
+const event = ref({
+    title: '',
+    start: '',
+    end: '',
+    allDay: false,
+    location: '',
+    description: ''
+});
+const selectedEvent = ref(null);
+const filterSidebar = ref(false);
+
+// Add categories data
+const categories = ref([
+    { id: 'campaigns', name: 'Καμπάνιες', checked: true },
+    { id: 'meetings', name: 'Συναντήσεις', checked: true },
+    { id: 'photoshoots', name: 'Φωτογραφίσεις', checked: true }
+]);
+
+const calendarOptions = ref({
+    plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
     },
-    setup() {
-        const router = useRouter();
-
-        const events = ref([
-            {
-                id: '1',
-                title: 'Καμπάνια Nike',
-                start: '2024-02-20T10:00:00',
-                end: '2024-02-20T12:00:00',
-                color: '#FF9800',
-                description: 'Φωτογράφιση για τη νέα συλλογή αθλητικών'
-            },
-            {
-                id: '2',
-                title: 'Φωτογράφιση Sephora',
-                start: '2024-02-22',
-                allDay: true,
-                color: '#4CAF50',
-                description: 'Beauty campaign για την άνοιξη'
-            },
-            {
-                id: '3',
-                title: 'Meeting με Adidas',
-                start: '2024-02-15T14:00:00',
-                end: '2024-02-15T15:30:00',
-                color: '#2196F3',
-                description: 'Συζήτηση για νέα συνεργασία'
-            },
-            {
-                id: '4',
-                title: 'Instagram Live',
-                start: '2024-02-18T18:00:00',
-                end: '2024-02-18T19:00:00',
-                color: '#E91E63',
-                description: 'Q&A με followers'
-            },
-            {
-                id: '5',
-                title: 'YouTube Video Shooting',
-                start: '2024-02-25T11:00:00',
-                end: '2024-02-25T16:00:00',
-                color: '#F44336',
-                description: 'Unboxing νέων προϊόντων'
-            },
-            {
-                id: '6',
-                title: 'Podcast Recording',
-                start: '2024-02-28T13:00:00',
-                end: '2024-02-28T14:30:00',
-                color: '#9C27B0',
-                description: 'Συνέντευξη για το Fashion Weekly'
-            }
-        ]);
-
-        const colors = [
-            { name: 'Μπλε', value: '#2196F3' },
-            { name: 'Πράσινο', value: '#4CAF50' },
-            { name: 'Πορτοκαλί', value: '#FF9800' },
-            { name: 'Κόκκινο', value: '#F44336' },
-            { name: 'Ροζ', value: '#E91E63' },
-            { name: 'Μωβ', value: '#9C27B0' }
-        ];
-
-        const categories = ref([
-            { id: 'campaigns', name: 'Καμπάνιες', checked: true },
-            { id: 'meetings', name: 'Συναντήσεις', checked: true },
-            { id: 'photoshoots', name: 'Φωτογραφίσεις', checked: true }
-        ]);
-
-        const calendarOptions = {
-            plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
-            initialView: 'dayGridMonth',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-            },
-            editable: true,
-            selectable: true,
-            selectMirror: true,
-            dayMaxEvents: true,
-            weekends: true,
-            locale: elLocale,
-            events: events.value,
-            select: (selectInfo) => {
-                openNewEventDialog(selectInfo);
-            },
-            eventClick: (info) => {
-                editEvent(info.event);
-            }
+    editable: true,
+    selectable: true,
+    selectMirror: true,
+    dayMaxEvents: true,
+    eventClick: (e) => {
+        const clickedEvent = e.event;
+        selectedEvent.value = {
+            id: clickedEvent.id,
+            title: clickedEvent.title,
+            start: clickedEvent.start,
+            end: clickedEvent.end,
+            allDay: clickedEvent.allDay,
+            location: clickedEvent.extendedProps.location,
+            description: clickedEvent.extendedProps.description
         };
+        eventDialog.value = true;
+        isNewEvent.value = false;
+    },
+    locale: elLocale,
+    events: events
+});
+const isNewEvent = ref(true);
 
-        const eventDialog = ref(false);
-        const filterSidebarVisible = ref(false);
-        const event = ref({
-            id: '',
-            title: '',
-            start: null,
-            end: null,
-            description: '',
-            color: '#2196F3',
-            allDay: false
-        });
-        const isNewEvent = ref(true);
-
-        const openNewEventDialog = (selectInfo = null) => {
-            isNewEvent.value = true;
-            event.value = {
-                id: '',
-                title: '',
-                start: selectInfo ? selectInfo.start : null,
-                end: selectInfo ? selectInfo.end : null,
-                description: '',
-                color: '#2196F3',
-                allDay: selectInfo ? selectInfo.allDay : false
-            };
-            eventDialog.value = true;
-        };
-
-        const editEvent = (eventData) => {
-            isNewEvent.value = false;
-            event.value = {
-                id: eventData.id,
-                title: eventData.title,
-                start: eventData.start,
-                end: eventData.end || eventData.start,
-                description: eventData.extendedProps?.description || '',
-                color: eventData.backgroundColor,
-                allDay: eventData.allDay
-            };
-            eventDialog.value = true;
-        };
-
-        const hideEventDialog = () => {
-            eventDialog.value = false;
-            event.value = {
-                id: '',
-                title: '',
-                start: null,
-                end: null,
-                description: '',
-                color: '#2196F3',
-                allDay: false
-            };
-        };
-
-        const saveEvent = () => {
-            if (event.value.title.trim()) {
-                if (isNewEvent.value) {
-                    // Προσθήκη νέου event
-                    events.value.push({
-                        id: Date.now().toString(),
-                        ...event.value
-                    });
-                } else {
-                    // Ενημέρωση υπάρχοντος event
-                    const index = events.value.findIndex(e => e.id === event.value.id);
-                    if (index !== -1) {
-                        events.value[index] = { ...event.value };
-                    }
-                }
-                eventDialog.value = false;
-            }
-        };
-
-        const deleteEvent = () => {
-            if (!isNewEvent.value) {
-                events.value = events.value.filter(e => e.id !== event.value.id);
-                eventDialog.value = false;
-            }
-        };
-
-        const toggleFilterSidebar = () => {
-            filterSidebarVisible.value = !filterSidebarVisible.value;
-        };
-
-        const goHome = () => {
-            router.push('/');
-        };
-
-        return {
-            calendarOptions,
-            eventDialog,
-            filterSidebarVisible,
-            event,
-            colors,
-            categories,
-            isNewEvent,
-            openNewEventDialog,
-            editEvent,
-            hideEventDialog,
-            saveEvent,
-            deleteEvent,
-            toggleFilterSidebar,
-            goHome
-        };
+const loadEvents = async () => {
+    try {
+        console.log("AAAAAAAAAAA");
+        const response = await calendarService.getEvents();
+        events.value = response.data;
+    } catch (error) {
+        console.error('Error loading events:', error);
     }
 };
+
+const saveEvent = async () => {
+    try {
+        if (isNewEvent.value) {
+            await calendarService.createEvent(event.value);
+            toast.add({ severity: 'success', summary: 'Επιτυχία', detail: 'Το event δημιουργήθηκε', life: 3000 });
+        } else {
+            await calendarService.updateEvent(selectedEvent.value.id, event.value);
+            toast.add({ severity: 'success', summary: 'Επιτυχία', detail: 'Το event ενημερώθηκε', life: 3000 });
+        }
+        eventDialog.value = false;
+        await loadEvents();
+    } catch (error) {
+        console.error('Error saving event:', error);
+        toast.add({ severity: 'error', summary: 'Σφάλμα', detail: 'Υπήρξε πρόβλημα με την αποθήκευση', life: 3000 });
+    }
+};
+
+const deleteEvent = async () => {
+    try {
+        await calendarService.deleteEvent(selectedEvent.value.id);
+        deleteEventDialog.value = false;
+        eventDialog.value = false;
+        toast.add({ severity: 'success', summary: 'Επιτυχία', detail: 'Το event διαγράφηκε', life: 3000 });
+        await loadEvents();
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        toast.add({ severity: 'error', summary: 'Σφάλμα', detail: 'Υπήρξε πρόβλημα με την διαγραφή', life: 3000 });
+    }
+};
+
+const openNewEventDialog = () => {
+    event.value = {
+        title: '',
+        start: '',
+        end: '',
+        allDay: false,
+        location: '',
+        description: ''
+    };
+    eventDialog.value = true;
+    isNewEvent.value = true;
+};
+
+const hideEventDialog = () => {
+    eventDialog.value = false;
+};
+
+const hideDeleteEventDialog = () => {
+    deleteEventDialog.value = false;
+};
+
+const toggleFilterSidebar = () => {
+    filterSidebar.value = !filterSidebar.value;
+};
+
+const goHome = () => {
+    router.push('/');
+};
+
+onMounted(() => {
+    console.log("Calendar mounted");
+    loadEvents();
+});
 </script>
 
 <style lang="scss" scoped>
