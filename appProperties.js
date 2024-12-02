@@ -8,3 +8,10 @@ export const realm = "myrealm";
 export const clientId ="myclient";
 export const clientSecret ="VLfnm8jBr387jy8zNhLwBxirNMvHqBCx";
 //export const clientSecret ="bnGO1ZqVHdsgBNnUe5aIu42JUTIhrvoA";
+
+export const stripeConfig = {
+    publishableKey: 'pk_test_your_key_here', // Αντικαταστήστε με το test publishable key σας
+    options: {
+        apiVersion: '2023-10-16'
+    }
+};
