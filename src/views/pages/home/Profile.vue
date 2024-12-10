@@ -108,6 +108,11 @@ import { useRouter } from 'vue-router';
 import { ApiService } from '@/common/apiService.js'
 import SubscriptionPlan from '@/views/pages/home/SubscriptionPlan.vue';
 import SubscriptionService from '@/service/SubscriptionService';
+import PaymentService from '@/service/PaymentService';
+import { loadStripe } from '@stripe/stripe-js';
+import { stripeConfig } from '@/appProperties';
+
+const stripePromise = loadStripe(stripeConfig.publishableKey);
 
 export default {
   components: {
@@ -118,16 +123,11 @@ export default {
       showOptions: false,
       userData: {},
       subscriptionData: {
-        currentPlan: {
-          name: '',
-          price: '',
-          features: [],
-          class: 'basic',
-          buttonClass: '',
-          buttonName: ''
-        },
+        currentPlan: null,
         availablePlans: []
-      }
+      },
+      loading: false,
+      error: null
     };
   },
   methods: {
@@ -168,18 +168,54 @@ export default {
     },
     async upgradePlan(planName) {
       try {
-        const response = await SubscriptionService.upgradePlan(planName);
-        if (response.data.success) {
-          this.toast.add({ severity: 'success', summary: 'Success', detail: `Successfully upgraded to ${planName} plan`, life: 3000 });
-          // Update current plan
-          const newPlan = [...this.subscriptionData.availablePlans].find(p => p.name === planName);
-          if (newPlan) {
-            this.subscriptionData.currentPlan = { ...newPlan };
+        this.loading = true;
+        // Get the plan details
+        const plan = this.subscriptionData.availablePlans.find(p => p.name === planName);
+        if (!plan) throw new Error('Plan not found');
+
+        // Create a payment intent
+        const { data: { clientSecret } } = await PaymentService.createPaymentIntent(plan.price * 100);
+
+        // Load Stripe
+        const stripe = await stripePromise;
+
+        // Show Stripe payment form
+        const { error } = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: elements.getElement('card'),
+            billing_details: {
+              name: this.userData.name,
+              email: this.userData.email
+            }
           }
+        });
+
+        if (error) {
+          throw new Error(error.message);
         }
-      } catch (error) {
-        console.error('Error upgrading plan:', error);
-        this.toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to upgrade plan. Please try again.', life: 3000 });
+
+        // Process the subscription
+        await PaymentService.processSubscriptionPayment(plan.id);
+
+        // Refresh subscription data
+        await this.fetchSubscriptionPlans();
+        
+        this.$toast.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Subscription upgraded successfully!',
+          life: 3000
+        });
+      } catch (err) {
+        this.error = err.message;
+        this.$toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err.message,
+          life: 3000
+        });
+      } finally {
+        this.loading = false;
       }
     }
   },
