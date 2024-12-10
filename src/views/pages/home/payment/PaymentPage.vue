@@ -106,25 +106,24 @@
     <div class="col-12 lg:col-4">
       <div class="card">
         <h3>Πρόσφατη Δραστηριότητα</h3>
-        <Timeline :value="recentActivity" class="w-full">
-          <template #content="slotProps">
-            <div class="flex flex-column">
-              <small class="text-500">{{ formatDate(slotProps.item.date) }}</small>
-              <div class="flex align-items-center gap-2 my-1">
-                <i :class="getActivityIcon(slotProps.item.type)" 
-                   :style="{ color: getActivityColor(slotProps.item.type) }">
-                </i>
-                <span class="font-medium">{{ slotProps.item.title }}</span>
+        <div class="recent-activity">
+          <ul class="list-none p-0 m-0">
+            <li v-for="(item, index) in recentActivity" :key="index" class="mb-3">
+              <div class="activity-card p-3 border-round surface-ground">
+                <div class="flex justify-content-between align-items-center mb-2">
+                  <span class="font-medium">{{ item.title }}</span>
+                  <small class="text-500">{{ formatDate(item.date) }}</small>
+                </div>
+                <p class="text-500 m-0 line-height-3">{{ item.description }}</p>
+                <div v-if="item.amount" class="mt-2">
+                  <span :class="['amount-tag p-2 border-round font-medium', getAmountClass(item.amount)]">
+                    {{ formatCurrency(item.amount) }}
+                  </span>
+                </div>
               </div>
-              <p class="text-500 m-0">{{ slotProps.item.description }}</p>
-              <div v-if="slotProps.item.amount" class="mt-1">
-                <span :class="getAmountClass(slotProps.item.amount)">
-                  {{ formatCurrency(slotProps.item.amount) }}
-                </span>
-              </div>
-            </div>
-          </template>
-        </Timeline>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -476,6 +475,33 @@ const exportReport = (format) => {
 .card h3 {
   margin-top: 0;
   margin-bottom: 1.5rem;
+}
+
+.recent-activity {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.activity-card {
+  transition: background-color 0.2s;
+}
+
+.activity-card:hover {
+  background-color: var(--surface-hover) !important;
+}
+
+.amount-tag {
+  display: inline-block;
+}
+
+.amount-positive {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+.amount-negative {
+  background: var(--red-100);
+  color: var(--red-700);
 }
 
 /* Timeline customization */

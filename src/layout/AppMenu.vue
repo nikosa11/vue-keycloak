@@ -80,7 +80,7 @@ export default {
                 {
                     label: 'Διαχείριση',
                     items: [
-                        { label: 'Προϊόντα', icon: 'pi pi-fw pi-shopping-cart', to: 'home/crud' },
+                        { label: 'Campaings', icon: 'pi pi-fw pi-shopping-cart', to: 'home/crud' },
                        
                     ]
                 }

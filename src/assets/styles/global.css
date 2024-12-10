@@ -1,0 +1,195 @@
+/* ===================================
+   Profile.vue Styles
+   =================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #fff;
+  font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: rgba(0,0,0,0.6);
+}
+
+/* Profile Page Container */
+.profile-page {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 5rem;
+}
+
+@media (max-width: 990px) {
+  .profile-page {
+    padding-top: 0;
+  }
+}
+
+.profile-page .content {
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  margin: auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 2rem;
+  box-shadow: 0 15px 35px rgba(50,50,93,0.1), 0 5px 15px rgba(0,0,0,0.07);
+}
+
+/* Theme Colors */
+.theme-orange .profile-page .content__cover {
+  background: linear-gradient(150deg, #ff4086 20%, #fd8d76 100%);
+}
+
+.theme-purple .profile-page .content__cover {
+  background: linear-gradient(150deg, #8700ff 20%, #f000ff 100%);
+}
+
+.theme-green .profile-page .content__cover {
+  background: linear-gradient(150deg, #1dcc45 20%, #42b883 100%);
+}
+
+.theme-blue .profile-page .content__cover {
+  background: linear-gradient(150deg, #0098f0 20%, #00f2c3 100%);
+}
+
+/* Profile Content Sections */
+.profile-page .content__title {
+  margin-top: 4.5rem;
+  text-align: center;
+}
+
+.profile-page .content__description {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+
+.profile-page .content__list {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  list-style-type: none;
+}
+
+.profile-page .content__button {
+  margin: 3rem 0 2rem;
+  border-radius: 17px;
+  text-align: center;
+}
+
+/* Theme Switcher */
+.theme-switcher-button {
+  position: fixed;
+  top: calc(50% - 3.6rem);
+  right: 0;
+  z-index: 2;
+  padding: 1rem;
+  background: rgba(0,0,0,0.6);
+  border-radius: 1rem 0 0 1rem;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.theme-switcher-wrapper {
+  width: 200px;
+  position: fixed;
+  top: calc(50% - 5rem);
+  right: 5rem;
+  z-index: 2;
+  padding: 1.5rem 0;
+  background: linear-gradient(#222a42, #1d253b);
+  box-shadow: 0 10px 50px 0 rgba(0,0,0,0.2);
+  border-radius: 0.25rem;
+}
+
+/* ===================================
+   SubscriptionPlan.vue Styles
+   =================================== */
+
+.subscription-plan {
+  padding: 2rem;
+}
+
+.plan-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.plan-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(50,50,93,0.11);
+  transition: transform 0.3s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+}
+
+/* ===================================
+   StripePaymentForm.vue Styles
+   =================================== */
+
+.stripe-form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.stripe-element {
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  background: white;
+  margin-bottom: 1rem;
+}
+
+.payment-button {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(150deg, #1d8cf8 20%, #3358f4 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.payment-button:hover {
+  opacity: 0.9;
+}
+
+/* Animations */
+@keyframes floating {
+  0% {
+    transform: rotate(0deg) translate(-10px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translate(-10px) rotate(-360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 990px) {
+  .profile-page .content {
+    max-width: 420px;
+    padding: 0;
+    border-radius: 0;
+  }
+  
+  .plan-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .stripe-form {
+    padding: 1rem;
+  }
+}
