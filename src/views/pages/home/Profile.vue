@@ -110,7 +110,7 @@ import SubscriptionPlan from '@/views/pages/home/SubscriptionPlan.vue';
 import SubscriptionService from '@/service/SubscriptionService';
 import PaymentService from '@/service/PaymentService';
 import { loadStripe } from '@stripe/stripe-js';
-import { stripeConfig } from '@/appProperties';
+import { stripeConfig } from '/appProperties';
 
 const stripePromise = loadStripe(stripeConfig.publishableKey);
 
