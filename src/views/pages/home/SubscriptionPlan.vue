@@ -7,7 +7,7 @@
         <li class="first">{{ features[0] }}</li>
         <li v-for="(feature, index) in features.slice(1)" :key="index">{{ feature }}</li>
       </ul>
-      <a v-if="showButton" href="#" class="button" :class="buttonClass">{{ buttonName }}</a>
+      <a v-if="showButton" @cursor="pointer" class="button" :class="buttonClass" @click.prevent="$emit('upgrade')">{{ buttonName }}</a>
     </div>
   </template>
   

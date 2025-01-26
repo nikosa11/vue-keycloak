@@ -107,7 +107,12 @@ const router = createRouter({
                     path: '/portfolio',
                     name: 'portfolio',
                     component: () => import('@/views/pages/home/Portfolio.vue')
-                }
+                },
+                {
+                    path: '/notifications',
+                    name: 'notifications',
+                    component: () => import('@/views/pages/home/Notifications.vue')
+                },
             ]
         },
         {

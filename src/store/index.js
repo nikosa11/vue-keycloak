@@ -1,6 +1,10 @@
 import { createStore } from 'vuex';
+import { notification } from './notification';
 
 const store = createStore({
+  modules: {
+    notification
+  },
   state() {
     return {
       count: 0,

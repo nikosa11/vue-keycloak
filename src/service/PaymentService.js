@@ -2,17 +2,27 @@ import apiClient from './ApiClient';
 
 export default {
     // Create a payment intent with Stripe
-    createPaymentIntent(amount, currency = 'eur') {
+    createPaymentIntent(paymentData) {
         return apiClient.post('/payments/create-intent', {
-            amount,
-            currency
+            amount: paymentData.amount,
+            currency: paymentData.currency || 'eur',
+            planName: paymentData.planName,
+            customerId: paymentData.customerId
         });
     },
 
-    // Process subscription payment
-    processSubscriptionPayment(planId) {
-        return apiClient.post('/payments/process-subscription', {
-            planId
+    // Create subscription
+    createSubscription(subscriptionData) {
+        return apiClient.post('/payments/create-subscription', {
+            paymentMethodId: subscriptionData.paymentMethodId,
+            planId: subscriptionData.planId,
+            userId: subscriptionData.userId,
+            planDetails: {
+                name: subscriptionData.planDetails.name,
+                price: subscriptionData.planDetails.price,
+                interval: subscriptionData.planDetails.interval || 'month',
+                email: subscriptionData.planDetails.email
+            }
         });
     },
 
@@ -22,19 +32,22 @@ export default {
     },
 
     // Get subscription details
-    getSubscriptionDetails() {
-        return apiClient.get('/payments/subscription');
+    getSubscriptionDetails(subscriptionId) {
+        return apiClient.get(`/payments/subscription/${subscriptionId}`);
     },
 
     // Cancel subscription
-    cancelSubscription() {
-        return apiClient.post('/payments/cancel-subscription');
+    cancelSubscription(subscriptionId) {
+        return apiClient.post('/payments/cancel-subscription', {
+            subscriptionId
+        });
     },
 
     // Update payment method
-    updatePaymentMethod(paymentMethodId) {
+    updatePaymentMethod(paymentMethodId, customerId) {
         return apiClient.post('/payments/update-payment-method', {
-            paymentMethodId
+            paymentMethodId,
+            customerId
         });
     }
 };

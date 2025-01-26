@@ -68,7 +68,7 @@
             :buttonClass="plan.buttonClass"
             :showButton="true"
             @upgrade="upgradePlan(plan.name)"
-          />
+            />    
         </div>
       </div>
       <div class="content__button">
@@ -81,6 +81,26 @@
           </p>
         </a>
       </div>
+      <Dialog 
+        v-model:visible="showPaymentForm" 
+        modal 
+        header="Complete Payment"
+        :style="{ width: '450px' }"
+        :closable="!loading"
+      >
+        <div class="payment-form">
+          <div id="card-element"></div>
+          <small class="text-gray-500 mb-4 block">
+            Test card: 4242 4242 4242 4242, any future date, any CVC
+          </small>
+          <Button 
+            label="Pay Now" 
+            @click="processPayment" 
+            :loading="loading"
+            class="w-full p-button-primary" 
+          />
+        </div>
+      </Dialog>
     </div>
     <div class="bg">
       <div><span></span><span></span><span></span><span></span><span></span><span></span></div>
@@ -110,13 +130,17 @@ import SubscriptionPlan from '@/views/pages/home/SubscriptionPlan.vue';
 import SubscriptionService from '@/service/SubscriptionService';
 import PaymentService from '@/service/PaymentService';
 import { loadStripe } from '@stripe/stripe-js';
+import Button from 'primevue/button';
+import Dialog from 'primevue/dialog';
 import { stripeConfig } from '/appProperties';
 
-const stripePromise = loadStripe(stripeConfig.publishableKey);
+const stripePromise = loadStripe('pk_test_51QRXL2F0LfKzo9PhsYqfKopm51KXvM1g6EGbB3Z8QggoMTA3dzsJCvQlfvhE4E4jMpzyaHAwkrHJMQ5gOF2AzM0k00d4dGWyQx'); // Replace with your Stripe publishable key
 
 export default {
   components: {
-    SubscriptionPlan
+    SubscriptionPlan,
+    Button,
+    Dialog
   },
   data() {
     return {
@@ -127,7 +151,14 @@ export default {
         availablePlans: []
       },
       loading: false,
-      error: null
+      error: null,
+      showPaymentForm: false,
+      stripe: null,
+      elements: null,
+      card: null,
+      selectedPlan: null,
+      currentSubscription: null,
+
     };
   },
   methods: {
@@ -149,10 +180,10 @@ export default {
         this.$store.commit('setUserData', response);
         this.userData = this.$store.state.userData;
       } catch (error) {
-        localStorage.removeItem('jwtToken');
-        localStorage.removeItem('jwtRefreshToken');
-        localStorage.removeItem('username');
-        this.router.push('/');
+        // localStorage.removeItem('jwtToken');
+        // localStorage.removeItem('jwtRefreshToken');
+        // localStorage.removeItem('username');
+        // this.router.push('/');
       }
     },
     async fetchSubscriptionPlans() {
@@ -167,56 +198,112 @@ export default {
       }
     },
     async upgradePlan(planName) {
-      try {
-        this.loading = true;
-        // Get the plan details
-        const plan = this.subscriptionData.availablePlans.find(p => p.name === planName);
-        if (!plan) throw new Error('Plan not found');
+      console.log('Upgrade plan to:', planName);
+      this.selectedPlan = this.subscriptionData.availablePlans.find(p => p.name === planName);
+      this.showPaymentForm = true;
+      await this.initializeStripe();
+    },
+    async initializeStripe() {
+      this.stripe = await stripePromise;
+      this.elements = this.stripe.elements();
+      this.card = this.elements.create('card');
+      this.card.mount('#card-element');
 
-        // Create a payment intent
-        const { data: { clientSecret } } = await PaymentService.createPaymentIntent(plan.price * 100);
-
-        // Load Stripe
-        const stripe = await stripePromise;
-
-        // Show Stripe payment form
-        const { error } = await stripe.confirmCardPayment(clientSecret, {
-          payment_method: {
-            card: elements.getElement('card'),
-            billing_details: {
-              name: this.userData.name,
-              email: this.userData.email
-            }
-          }
-        });
-
-        if (error) {
-          throw new Error(error.message);
+      // Listen for card input changes
+      this.card.on('change', (event) => {
+        if (event.error) {
+          this.toast.add({
+            severity: 'warn',
+            summary: 'Card Error',
+            detail: event.error.message,
+            life: 3000
+          });
         }
+      });
 
-        // Process the subscription
-        await PaymentService.processSubscriptionPayment(plan.id);
+      // Listen for card ready
+      this.card.on('ready', () => {
+        console.log('Stripe Card element is ready');
+      });
+    },
+    async processPayment() {
+  try {
+    this.loading = true;
+    console.log('Starting payment process...', this.selectedPlan);
 
-        // Refresh subscription data
-        await this.fetchSubscriptionPlans();
-        
-        this.$toast.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Subscription upgraded successfully!',
-          life: 3000
-        });
-      } catch (err) {
-        this.error = err.message;
-        this.$toast.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: err.message,
-          life: 3000
-        });
-      } finally {
-        this.loading = false;
+    // 1. Create Payment Intent
+    const { data: { clientSecret } } = await PaymentService.createPaymentIntent({
+      amount: parseFloat(this.selectedPlan.price.replace('$', '')) * 100,
+      currency: 'eur',
+      planName: this.selectedPlan.name,
+      customerId: this.userData?.stripeCustomerId
+    });
+
+    // 2. Create Payment Method with Stripe
+    const { error: createError, paymentMethod } = await this.stripe.createPaymentMethod({
+      type: 'card',
+      card: this.card,
+      billing_details: {
+        name: this.userData.name,
+        email: this.userData.email
       }
+    });
+
+    if (createError) {
+      throw new Error(createError.message);
+    }
+
+    // 3. Confirm Card Payment with Stripe
+    const { error: confirmError, paymentIntent } = await this.stripe.confirmCardPayment(
+      clientSecret,
+      {
+        payment_method: paymentMethod.id
+      }
+    );
+
+    if (confirmError) {
+      throw new Error(confirmError.message);
+    }
+
+    // 4. Create Subscription
+    const { data: subscription } = await PaymentService.createSubscription({
+      paymentMethodId: paymentMethod.id,
+      planId: this.selectedPlan.stripePriceId,
+      userId: this.userData.id,
+      planDetails: {
+        name: this.selectedPlan.name,
+        price: Math.round(parseFloat(this.selectedPlan.price.replace('$', '')) * 100),
+        interval: 'month',
+        email: this.userData.email
+      }
+    });
+
+    // 5. Success message
+    this.toast.add({
+      severity: 'success',
+      summary: 'Subscription Activated',
+      detail: `Successfully subscribed to ${this.selectedPlan.name} plan`,
+      life: 3000
+    });
+
+    // 6. Cleanup and refresh data
+    this.showPaymentForm = false;
+    this.card.destroy();
+    
+    // 7. Refresh subscription data
+    this.currentSubscription = subscription.currentPlan;
+
+  } catch (error) {
+    console.error('Payment error:', error);
+    this.toast.add({
+      severity: 'error',
+      summary: 'Payment Failed',
+      detail: error.response?.data?.message || error.message,
+      life: 3000
+    });
+  } finally {
+    this.loading = false;
+  }
     }
   },
   async created() {
@@ -228,6 +315,7 @@ export default {
   }
 };
 </script>
+
 <style scoped>
 /* Προσαρμόστε τον CSS σύμφωνα με τις ανάγκες σας */
 
@@ -954,5 +1042,33 @@ body {
   justify-content: center;
   flex-wrap: wrap;
   margin-top: 20px;
+}
+
+.payment-form {
+  padding: 1rem;
+}
+
+#card-element {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background: #f8f9fa;
+}
+
+.text-gray-500 {
+  color: #6c757d;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.block {
+  display: block;
+}
+
+.w-full {
+  width: 100%;
 }
 </style>
