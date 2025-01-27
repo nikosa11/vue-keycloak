@@ -64,16 +64,6 @@ const router = createRouter({
                     component: () => import('@/views/pages/home/payment/InvoicesReceipts.vue')
                 }, 
                 {
-                    path: '/uikit/myPage',
-                    name: 'myPage',
-                    component: () => import('@/views/uikit/MyPage.vue')
-                },
-                {
-                    path: '/uikit/News',
-                    name: 'news',
-                    component: () => import('@/views/uikit/News.vue')
-                },
-                {
                     path: '/home/profile',
                     name: 'profile',
                     component: () => import('@/views/pages/home/Profile.vue')
@@ -92,16 +82,6 @@ const router = createRouter({
                     path: '/crud',
                     name: 'crud',
                     component: () => import('@/views/pages/home/Crud.vue')
-                },
-                {
-                    path: '/utilities/icons',
-                    name: 'icons',
-                    component: () => import('@/views/utilities/Icons.vue')
-                },
-                {
-                    path: '/documentation',
-                    name: 'documentation',
-                    component: () => import('@/views/utilities/Documentation.vue')
                 },
                 {
                     path: '/portfolio',

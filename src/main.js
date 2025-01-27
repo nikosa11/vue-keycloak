@@ -267,12 +267,15 @@ router.beforeEach((to, from, next) => {
     }
   
     // Η υπόλοιπη λογική του navigation guard παραμένει ίδια
-    if (!auth.value && (to.path !== '/auth/login' && to.path !== '/auth/access' && to.path !== '/landing' && to.path !== '/register' && to.path !== '/reset-password'&& to.path !== '/forgot-password')) {
-      next('/auth/login');
-    } else if (auth.value && (to.path === '/auth/login' || to.path === '/landing' || to.path === '/register' || to.path === '/reset-password' || to.path === '/forgot-password')) {
-      next('/');
+    const publicPages = ['/auth/login', '/auth/access', '/landing', '/register', '/reset-password', '/forgot-password'];
+    const isPublicPage = publicPages.includes(to.path);
+
+    if (!auth.value && !isPublicPage) {
+        next('/auth/login');
+    } else if (auth.value && isPublicPage && to.path !== '/auth/access') {
+        next('/');
     } else {
-      next();
+        next();
     }
   });
 let initOps =  {
@@ -332,4 +335,3 @@ if (localStorage.getItem('jwtToken') && localStorage.getItem('jwtRefreshToken') 
 //   });
 
 //   app.mount('#app');
-
