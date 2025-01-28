@@ -49,27 +49,8 @@ export default {
           isActiveMenu: false,
           itemKey: null,
           route: useRoute(),
-          router: useRouter(),
-          apiService: new ApiService(),
-          layoutConfig: useLayout().layoutConfig,
-          layoutState: useLayout().layoutState,
-          onMenuToggle:useLayout().onMenuToggle
+          router: useRouter()
       };
-  },
-  mounted() {
-    const { layoutConfig, layoutState, setActiveMenuItem, onMenuToggle } = useLayout();
-
-      this.itemKey = this.parentItemKey ? this.parentItemKey + '-' + this.index : String(this.index);
-      const activeItem = this.layoutState.activeMenuItem;
-
-      this.isActiveMenu = activeItem === this.itemKey || activeItem ? activeItem.startsWith(this.itemKey + '-') : false;
-
-      // watch(
-      //     () => this.layoutConfig.activeMenuItem.value,
-      //     (newVal) => {
-      //         this.isActiveMenu = newVal === this.itemKey || newVal.startsWith(this.itemKey + '-');
-      //     }
-      // );
   },
   methods: {
       itemClick(event, item) {
@@ -112,26 +93,46 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.layout-root-menuitem {
-  font-weight: bold;
-  margin-top: 1rem;
-}
-
-.active-menuitem {
-  background-color: #f4f4f4;
-}
-
-.layout-menuitem-root-text {
-  padding: 1rem;
-  font-size: 1.25rem;
-}
-
 .layout-menuitem-icon {
-  margin-right: 0.5rem;
+    margin-right: 0.5rem;
+    background: linear-gradient(90deg, #40E0D0, #2F80ED);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.layout-root-menuitem {
+    > div {
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        color: #495057;
+    }
+}
+
+a {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    margin: 0 0.5rem;
+    
+    &:hover {
+        background: rgba(0, 0, 0, 0.08);
+    }
+}
+
+.router-link-active:not([href="/"]) {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.active-route:not([href="/"]) {
+    background: rgba(0, 0, 0, 0.08);
 }
 
 .layout-menuitem-text {
-  font-size: 1.3rem;
+    color: #495057;
 }
 
 .layout-submenu-toggler {
@@ -140,8 +141,12 @@ export default {
 
 .layout-submenu {
   list-style: none;
-  padding: 0;
   margin: 0;
-  padding-left: 1rem;
+  padding: 0;
+  overflow: hidden;
+  
+  a {
+      padding-left: 2.5rem;
+  }
 }
 </style>

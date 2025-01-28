@@ -72,7 +72,7 @@ const avatar3 = 'https://picsum.photos/200?random=3';
             <div
                 id="hero"
                 class="flex flex-column pt-4 px-4 lg:px-8 overflow-hidden"
-                style="background: linear-gradient(0deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)), radial-gradient(77.36% 256.97% at 77.36% 57.52%, rgb(238, 239, 175) 0%, rgb(195, 227, 250) 100%); clip-path: ellipse(150% 87% at 93% 13%)"
+                style="background: linear-gradient(135deg, rgba(64, 224, 208, 0.1) 0%, rgba(47, 128, 237, 0.1) 100%); clip-path: ellipse(150% 87% at 93% 13%)"
             >
                 <div class="mx-4 md:mx-8 mt-0 md:mt-4">
                     <h1 class="text-6xl font-bold text-gray-900 line-height-2">
@@ -82,7 +82,9 @@ const avatar3 = 'https://picsum.photos/200?random=3';
                     <p class="font-normal text-2xl line-height-3 md:mt-3 text-gray-700">
                         Απλοποιήστε τις influencer καμπάνιες σας με την πιο ολοκληρωμένη πλατφόρμα διαχείρισης στην Ελλάδα
                     </p>
-                    <Button label="Ξεκινήστε Τώρα" class="p-button-rounded text-xl border-none mt-5 bg-blue-500 font-normal text-white line-height-3 px-3"></Button>
+                    <Button label="Ξεκινήστε Τώρα" class="p-button-rounded text-xl border-none mt-5 font-normal text-white line-height-3 px-3" 
+                        style="background: linear-gradient(90deg, #40E0D0 0%, #2F80ED 100%); transition: all 0.3s ease;">
+                    </Button>
                 </div>
                 <div class="flex justify-content-center md:justify-content-end">
                     <img src="/demo/images/landing/screen-1.png" alt="Hero Image" class="w-9 md:w-auto" style="border-radius: 12px;" />
@@ -97,10 +99,10 @@ const avatar3 = 'https://picsum.photos/200?random=3';
                     </div>
 
                     <div class="col-12 md:col-12 lg:col-4 p-0 lg:pr-5 lg:pb-5 mt-4 lg:mt-0">
-                        <div style="height: 160px; padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(253, 228, 165, 0.2), rgba(187, 199, 205, 0.2)), linear-gradient(180deg, rgba(253, 228, 165, 0.2), rgba(187, 199, 205, 0.2))">
+                        <div style="height: 160px; padding: 2px; border-radius: 10px; background: linear-gradient(135deg, rgba(64, 224, 208, 0.2) 0%, rgba(47, 128, 237, 0.2) 100%)">
                             <div class="p-3 surface-card h-full" style="border-radius: 8px">
-                                <div class="flex align-items-center justify-content-center bg-yellow-200 mb-3" style="width: 3.5rem; height: 3.5rem; border-radius: 10px">
-                                    <i class="pi pi-users text-2xl text-yellow-700"></i>
+                                <div class="flex align-items-center justify-content-center mb-3" style="width: 3.5rem; height: 3.5rem; border-radius: 10px; background: linear-gradient(135deg, #40E0D0 0%, #2F80ED 100%)">
+                                    <i class="pi pi-users text-2xl text-white"></i>
                                 </div>
                                 <h5 class="mb-2 text-900">Εύρεση Influencers</h5>
                                 <span class="text-600">Ανακαλύψτε τους κατάλληλους influencers με βάση το κοινό-στόχο σας</span>
@@ -109,10 +111,10 @@ const avatar3 = 'https://picsum.photos/200?random=3';
                     </div>
 
                     <div class="col-12 md:col-12 lg:col-4 p-0 lg:pr-5 lg:pb-5 mt-4 lg:mt-0">
-                        <div style="height: 160px; padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(145, 226, 237, 0.2), rgba(251, 199, 145, 0.2)), linear-gradient(180deg, rgba(253, 228, 165, 0.2), rgba(172, 180, 223, 0.2))">
+                        <div style="height: 160px; padding: 2px; border-radius: 10px; background: linear-gradient(135deg, rgba(64, 224, 208, 0.2) 0%, rgba(47, 128, 237, 0.2) 100%)">
                             <div class="p-3 surface-card h-full" style="border-radius: 8px">
-                                <div class="flex align-items-center justify-content-center bg-cyan-200 mb-3" style="width: 3.5rem; height: 3.5rem; border-radius: 10px">
-                                    <i class="pi pi-chart-bar text-2xl text-cyan-700"></i>
+                                <div class="flex align-items-center justify-content-center mb-3" style="width: 3.5rem; height: 3.5rem; border-radius: 10px; background: linear-gradient(135deg, #40E0D0 0%, #2F80ED 100%)">
+                                    <i class="pi pi-chart-bar text-2xl text-white"></i>
                                 </div>
                                 <h5 class="mb-2 text-900">ROI Analytics</h5>
                                 <span class="text-600">Μετρήστε την απόδοση των καμπανιών σας με προηγμένα analytics</span>
@@ -121,10 +123,10 @@ const avatar3 = 'https://picsum.photos/200?random=3';
                     </div>
 
                     <div class="col-12 md:col-12 lg:col-4 p-0 lg:pb-5 mt-4 lg:mt-0">
-                        <div style="height: 160px; padding: 2px; border-radius: 10px; background: linear-gradient(90deg, rgba(145, 226, 237, 0.2), rgba(172, 180, 223, 0.2)), linear-gradient(180deg, rgba(172, 180, 223, 0.2), rgba(246, 158, 188, 0.2))">
+                        <div style="height: 160px; padding: 2px; border-radius: 10px; background: linear-gradient(135deg, rgba(64, 224, 208, 0.2) 0%, rgba(47, 128, 237, 0.2) 100%)">
                             <div class="p-3 surface-card h-full" style="border-radius: 8px">
-                                <div class="flex align-items-center justify-content-center bg-indigo-200" style="width: 3.5rem; height: 3.5rem; border-radius: 10px">
-                                    <i class="pi pi-check-circle text-2xl text-indigo-700"></i>
+                                <div class="flex align-items-center justify-content-center mb-3" style="width: 3.5rem; height: 3.5rem; border-radius: 10px; background: linear-gradient(135deg, #40E0D0 0%, #2F80ED 100%)">
+                                    <i class="pi pi-check-circle text-2xl text-white"></i>
                                 </div>
                                 <h5 class="mb-2 text-900">Αυτοματοποίηση</h5>
                                 <span class="text-600">Αυτοματοποιήστε τη διαχείριση καμπανιών και συμβολαίων</span>
@@ -234,13 +236,16 @@ const avatar3 = 'https://picsum.photos/200?random=3';
 
                 <div class="grid justify-content-between mt-8 md:mt-0">
                     <div class="col-12 lg:col-4 p-0 md:p-3">
-                        <div class="p-3 flex flex-column border-200 pricing-card cursor-pointer border-2 hover:border-primary transition-duration-300 transition-all" style="border-radius: 10px">
+                        <div class="p-3 flex flex-column border-200 pricing-card cursor-pointer border-2 hover:border-primary transition-duration-300 transition-all" 
+                            style="border-radius: 10px; border: 2px solid transparent; background-image: linear-gradient(white, white), linear-gradient(90deg, #40E0D0 0%, #2F80ED 100%); background-origin: border-box; background-clip: content-box, border-box;">
                             <h3 class="text-900 text-center my-5">Starter</h3>
                             <img src="/demo/images/landing/free.svg" class="w-10 h-10 mx-auto" alt="free" />
                             <div class="my-5 text-center">
                                 <span class="text-5xl font-bold mr-2 text-900">€0</span>
                                 <span class="text-600">ανά μήνα</span>
-                                <Button label="Δωρεάν Δοκιμή" class="block mx-auto mt-5 p-button-rounded border-none ml-3 font-light line-height-2 bg-blue-500"></Button>
+                                <Button label="Δωρεάν Δοκιμή" class="block mx-auto mt-5 p-button-rounded border-none ml-3 font-normal line-height-2 text-white"
+                                    style="background: linear-gradient(90deg, #40E0D0 0%, #2F80ED 100%); transition: all 0.3s ease;">
+                                </Button>
                             </div>
                             <ul class="list-none p-0 m-0 flex-grow-1">
                                 <li class="flex align-items-center mb-3">
@@ -260,13 +265,16 @@ const avatar3 = 'https://picsum.photos/200?random=3';
                     </div>
 
                     <div class="col-12 lg:col-4 p-0 md:p-3 mt-4 md:mt-0">
-                        <div class="p-3 flex flex-column border-200 pricing-card cursor-pointer border-2 hover:border-primary transition-duration-300 transition-all" style="border-radius: 10px">
+                        <div class="p-3 flex flex-column border-200 pricing-card cursor-pointer border-2 hover:border-primary transition-duration-300 transition-all" 
+                            style="border-radius: 10px; border: 2px solid transparent; background-image: linear-gradient(white, white), linear-gradient(90deg, #40E0D0 0%, #2F80ED 100%); background-origin: border-box; background-clip: content-box, border-box;">
                             <h3 class="text-900 text-center my-5">Professional</h3>
                             <img src="/demo/images/landing/startup.svg" class="w-10 h-10 mx-auto" alt="startup" />
                             <div class="my-5 text-center">
                                 <span class="text-5xl font-bold mr-2 text-900">€49</span>
                                 <span class="text-600">ανά μήνα</span>
-                                <Button label="Ξεκινήστε Τώρα" class="block mx-auto mt-5 p-button-rounded border-none ml-3 font-light line-height-2 bg-blue-500"></Button>
+                                <Button label="Ξεκινήστε Τώρα" class="block mx-auto mt-5 p-button-rounded border-none ml-3 font-normal line-height-2 text-white"
+                                    style="background: linear-gradient(90deg, #40E0D0 0%, #2F80ED 100%); transition: all 0.3s ease;">
+                                </Button>
                             </div>
                             <ul class="list-none p-0 m-0 flex-grow-1">
                                 <li class="flex align-items-center mb-3">
@@ -290,13 +298,16 @@ const avatar3 = 'https://picsum.photos/200?random=3';
                     </div>
 
                     <div class="col-12 lg:col-4 p-0 md:p-3 mt-4 md:mt-0">
-                        <div class="p-3 flex flex-column border-200 pricing-card cursor-pointer border-2 hover:border-primary transition-duration-300 transition-all" style="border-radius: 10px">
+                        <div class="p-3 flex flex-column border-200 pricing-card cursor-pointer border-2 hover:border-primary transition-duration-300 transition-all" 
+                            style="border-radius: 10px; border: 2px solid transparent; background-image: linear-gradient(white, white), linear-gradient(90deg, #40E0D0 0%, #2F80ED 100%); background-origin: border-box; background-clip: content-box, border-box;">
                             <h3 class="text-900 text-center my-5">Enterprise</h3>
                             <img src="/demo/images/landing/enterprise.svg" class="w-10 h-10 mx-auto" alt="enterprise" />
                             <div class="my-5 text-center">
                                 <span class="text-5xl font-bold mr-2 text-900">€99</span>
                                 <span class="text-600">ανά μήνα</span>
-                                <Button label="Επικοινωνήστε μαζί μας" class="block mx-auto mt-5 p-button-rounded border-none ml-3 font-light line-height-2 bg-blue-500"></Button>
+                                <Button label="Επικοινωνήστε μαζί μας" class="block mx-auto mt-5 p-button-rounded border-none ml-3 font-normal line-height-2 text-white"
+                                    style="background: linear-gradient(90deg, #40E0D0 0%, #2F80ED 100%); transition: all 0.3s ease;">
+                                </Button>
                             </div>
                             <ul class="list-none p-0 m-0 flex-grow-1">
                                 <li class="flex align-items-center mb-3">

@@ -64,7 +64,7 @@ const router = createRouter({
                     component: () => import('@/views/pages/home/payment/InvoicesReceipts.vue')
                 }, 
                 {
-                    path: '/home/profile',
+                    path: '/profile',
                     name: 'profile',
                     component: () => import('@/views/pages/home/Profile.vue')
                 },
@@ -74,15 +74,15 @@ const router = createRouter({
                     component: () => import('@/views/utilities/Blocks.vue')
                 },
                 {
-                    path: '/home/crud',
+                    path: '/crud',
                     name: 'projects',
                     component: () => import('@/views/pages/home/Crud.vue')
                 },
-                {
-                    path: '/crud',
-                    name: 'crud',
-                    component: () => import('@/views/pages/home/Crud.vue')
-                },
+                // {
+                //     path: '/crud',
+                //     name: 'crud',
+                //     component: () => import('@/views/pages/home/Crud.vue')
+                // },
                 {
                     path: '/portfolio',
                     name: 'portfolio',

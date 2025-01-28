@@ -1,10 +1,15 @@
 <template>
   <div class="grid">
-    <!-- Ενσωμάτωση του Home.vue component -->
     <div class="col-12">
       <Home />
     </div>
 
+    <div class="col-12">
+      <Stats />
+    </div>
+
+    <!-- Ενσωμάτωση του Home.vue component -->
+    
     <!-- Ενσωμάτωση του Influencer2.vue component -->
     <div class="col-12">
       <Influencer2 />
@@ -29,6 +34,7 @@ import Crud from '@/views/pages/home/Crud.vue';
 import Button from 'primevue/button';
 import Menu from 'primevue/menu';
 import Skeleton from 'primevue/skeleton';
+import Stats from '@/views/pages/home/Stats.vue';
 
 export default {
   components: {
@@ -39,7 +45,8 @@ export default {
     Crud,
     Home,
     Influencer2,
-    Wizzard
+    Wizzard,
+    Stats
   },
   data() {
     return {

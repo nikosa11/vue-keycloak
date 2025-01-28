@@ -136,11 +136,11 @@ const goToNotifications = () => {
                 <span>Ειδοποιήσεις</span>
                 <Badge v-show="unreadNotifications > 0" :value="unreadNotifications" severity="danger" />
             </button>
-            <button @click="goToMessaging()" class="p-link layout-topbar-button">
+            <!-- <button @click="goToMessaging()" class="p-link layout-topbar-button">
                 <i class="pi pi-comments"></i>
                 <span>Μηνύματα</span>
                 <Badge v-show="unreadMessages > 0" :value="unreadMessages" severity="danger" />
-            </button>
+            </button> -->
             <button @click="goToCalendar()" class="p-link layout-topbar-button">
                 <i class="pi pi-calendar"></i>
                 <span>Calendar</span>
@@ -157,54 +157,200 @@ const goToNotifications = () => {
 </template>
 
 <style lang="scss" scoped>
-.layout-topbar-button {
-    position: relative;
+.layout-topbar {
+    position: fixed;
+    height: 5rem;
+    z-index: 997;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 2rem;
+    background-color: var(--surface-card);
+    transition: left 0.2s;
     display: flex;
     align-items: center;
-    padding: 0.5rem 1rem;
-    
-    .pi {
-        font-size: 1.25rem;
-        margin-right: 0.5rem;
-    }
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, .02), 0px 0px 2px rgba(0, 0, 0, .05), 0px 1px 4px rgba(0, 0, 0, .08);
 
-    :deep(.p-badge) {
-        position: absolute;
-        min-width: 1.25rem;
-        height: 1.25rem;
-        line-height: 1.25rem;
-        font-size: 0.75rem;
-        padding: 0 0.25rem;
-        background-color: var(--red-500);
-        border-radius: 50%;
-        top: 0;
-        right: 0.5rem;
-    }
+    .layout-topbar-logo {
+        display: flex;
+        align-items: center;
+        font-size: 1.5rem;
+        font-weight: 500;
+        width: 300px;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #40E0D0, #2F80ED);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
 
-    span {
-        margin-right: 1.5rem;
-    }
-}
+        img {
+            height: 2.5rem;
+            margin-right: .5rem;
+        }
 
-.layout-topbar-menu {
-    .layout-topbar-button {
-        :deep(.p-badge) {
-            display: block !important;
+        &:focus {
+            outline: 0 none;
+            outline-offset: 0;
+            transition: box-shadow .2s;
+            box-shadow: var(--focus-ring);
         }
     }
-}
 
-@media screen and (max-width: 960px) {
     .layout-topbar-button {
-        padding: 0.5rem;
-        
-        :deep(.p-badge) {
-            top: -0.2rem;
-            right: -0.2rem;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        color: var(--text-color-secondary);
+        border-radius: 50%;
+        width: 3rem;
+        height: 3rem;
+        cursor: pointer;
+
+        i {
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, #40E0D0, #2F80ED);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         span {
+            font-size: 1rem;
             display: none;
+        }
+
+        :deep(.p-badge) {
+            position: absolute;
+            min-width: 1.25rem;
+            height: 1.25rem;
+            line-height: 1.25rem;
+            font-size: 0.75rem;
+            padding: 0 0.25rem;
+            background-color: var(--red-500);
+            border-radius: 50%;
+            top: 0;
+            right: 0;
+            transform: translate(25%, -25%);
+            display: block !important;
+        }
+    }
+
+    .layout-menu-button {
+        margin-left: 2rem;
+    }
+
+    .layout-topbar-menu-button {
+        display: none;
+
+        i {
+            font-size: 1.25rem;
+        }
+    }
+
+    .layout-topbar-menu {
+        margin: 0 0 0 auto;
+        padding: 0;
+        list-style: none;
+        display: flex;
+
+        .layout-topbar-button {
+            margin-left: 1rem;
+        }
+    }
+}
+
+.layout-topbar-menu-mobile-active {
+    .layout-topbar-menu {
+        display: flex;
+        position: absolute;
+        padding: 0.5rem;
+        background-color: var(--surface-overlay);
+        border-radius: 12px;
+        box-shadow: 0px 3px 5px rgba(0,0,0,.02), 0px 0px 2px rgba(0,0,0,.05), 0px 1px 4px rgba(0,0,0,.08);
+
+        .layout-topbar-button {
+            margin-left: 0;
+            display: flex;
+            width: 100%;
+            height: auto;
+            justify-content: flex-start;
+            border-radius: 12px;
+            padding: 1rem;
+
+            i {
+                font-size: 1rem;
+                margin-right: .5rem;
+            }
+
+            span {
+                font-weight: medium;
+                display: block;
+            }
+        }
+    }
+}
+
+@media (max-width: 991px) {
+    .layout-topbar {
+        justify-content: space-between;
+
+        .layout-topbar-logo {
+            width: auto;
+            order: 2;
+        }
+
+        .layout-menu-button {
+            margin-left: 0;
+            order: 1;
+        }
+
+        .layout-topbar-menu-button {
+            display: inline-flex;
+            margin-left: 0;
+            order: 3;
+        }
+
+        .layout-topbar-menu {
+            margin-left: 0;
+            position: absolute;
+            flex-direction: column;
+            background-color: var(--surface-overlay);
+            box-shadow: 0px 3px 5px rgba(0,0,0,.02), 0px 0px 2px rgba(0,0,0,.05), 0px 1px 4px rgba(0,0,0,.08);
+            border-radius: 12px;
+            padding: 1rem;
+            right: 2rem;
+            top: 5rem;
+            min-width: 15rem;
+            display: none;
+            -webkit-animation: scalein 0.15s linear;
+            animation: scalein 0.15s linear;
+
+            .layout-topbar-button {
+                margin-left: 0;
+                display: flex;
+                width: 100%;
+                height: auto;
+                justify-content: flex-start;
+                border-radius: 12px;
+                padding: 1rem;
+
+                i {
+                    font-size: 1rem;
+                    margin-right: .5rem;
+                }
+
+                span {
+                    font-weight: medium;
+                    display: block;
+                }
+            }
+        }
+
+        .layout-topbar-menu-mobile-active {
+            .layout-topbar-menu {
+                display: block;
+            }
         }
     }
 }

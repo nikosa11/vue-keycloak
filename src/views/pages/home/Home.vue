@@ -3,9 +3,9 @@
       <div class="hero-section">
         <img src="https://picsum.photos/1200/400" alt="Hero Image" class="hero-image" />
         <div class="hero-content">
-          <h1 class="hero-title text-white font-bold text-shadow">
+          <!-- <h1 class="hero-title text-white font-bold text-shadow">
             Καλώς ήρθατε στην Πλατφόρμα Προώθησης
-          </h1>
+          </h1> -->
           <p class="hero-subtitle text-white text-shadow-sm mb-6">
             Ανακαλύψτε τον ιδανικό influencer για το προϊόν σας και βελτιώστε την καμπάνια σας.
           </p>

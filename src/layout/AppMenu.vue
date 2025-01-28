@@ -46,7 +46,7 @@ export default {
                     label: 'Home',
                     items: [
                         { 
-                            label: 'Home', 
+                            label: 'Αρχική Σελίδα', 
                             icon: 'text-2xl mb-2 pi pi-fw pi-home', 
                             to: '/' 
                         },
@@ -55,20 +55,15 @@ export default {
                         //     icon: 'text-2xl mb-2 pi pi-fw pi-circle', 
                         //     to: '/uikit/myPage' 
                         // },
-                        { 
-                            label: 'Στατιστικά Στοιχεία', 
-                            icon: 'text-2xl mb-2 pi pi-chart-line', 
-                            to: '/stats' 
-                        },
+                        // { 
+                        //     label: 'Στατιστικά Στοιχεία', 
+                        //     icon: 'text-2xl mb-2 pi pi-chart-line', 
+                        //     to: '/stats' 
+                        // },
                         { 
                             label: 'Proposal', 
                             icon: 'text-2xl mb-2 pi pi-file', 
                             to: '/proposal' 
-                        },
-                        { 
-                            label: 'Influencers', 
-                            icon: 'text-2xl mb-2 pi pi-fw pi-users', 
-                            to: '/home/influencers' 
                         },
                         { 
                             label: 'Portfolio', 
@@ -78,9 +73,15 @@ export default {
                     ]
                 },
                 {
-                    label: 'Διαχείριση',
+                    label: 'Discovery',
                     items: [
-                        { label: 'Campaings', icon: 'pi pi-fw pi-shopping-cart', to: 'home/crud' },
+                        { 
+                            label: 'Influencers', 
+                            icon: 'text-2xl mb-2 pi pi-fw pi-users', 
+                            to: '/home/influencers' 
+                        },
+                        { label: 'Campaings', icon: 'pi pi-fw pi-shopping-cart', to: '/crud' },
+
                        
                     ]
                 }
