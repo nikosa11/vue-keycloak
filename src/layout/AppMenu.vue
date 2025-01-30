@@ -74,11 +74,17 @@ export default {
                 },
                 {
                     label: 'Discovery',
+                    icon: 'pi pi-fw pi-compass',
                     items: [
                         { 
                             label: 'Influencers', 
                             icon: 'text-2xl mb-2 pi pi-fw pi-users', 
                             to: '/home/influencers' 
+                        },
+                        { 
+                            label: 'ROI Analysis', 
+                            icon: 'pi pi-fw pi-chart-line', 
+                            to: '/discovery/roi' 
                         },
                         { label: 'Campaings', icon: 'pi pi-fw pi-shopping-cart', to: '/crud' },
 

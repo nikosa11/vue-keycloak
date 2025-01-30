@@ -19,76 +19,75 @@
   </li>
 </template>
 
-<script>
-import { ref, onBeforeMount, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+<script setup>
+import { ref } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
+import { useRoute, useRouter } from 'vue-router';
 import { ApiService } from '@/common/apiService.js'
 
-export default {
-  props: {
-      item: {
-          type: Object,
-          default: () => ({})
-      },
-      index: {
-          type: Number,
-          default: 0
-      },
-      root: {
-          type: Boolean,
-          default: true
-      },
-      parentItemKey: {
-          type: String,
-          default: null
-      }
+const { onMenuToggle } = useLayout();
+const route = useRoute();
+const router = useRouter();
+
+const active = ref(false);
+
+const props = defineProps({
+  item: {
+      type: Object,
+      default: () => ({})
   },
-  data() {
-      return {
-          isActiveMenu: false,
-          itemKey: null,
-          route: useRoute(),
-          router: useRouter()
-      };
+  index: {
+      type: Number,
+      default: 0
   },
-  methods: {
-      itemClick(event, item) {
-
-          if (item.label === 'Logout') {
-              this.apiService.logoutFromKeycloak();
-              localStorage.removeItem('jwtToken');
-              localStorage.removeItem('jwtRefreshToken');
-              localStorage.removeItem('username');
-              this.router.push('/auth/login');
-          }
-          this.onMenuToggle();
-
-          if ((item.to || item.url) && (staticMenuMobileActive.value || overlayMenuActive.value)) {
-              this.onMenuToggle();
-          }
-          if (item.disabled) {
-              event.preventDefault();
-              return;
-          }
-
-          const { overlayMenuActive, staticMenuMobileActive } = this.layoutState;
-
-         
-
-          if (item.command) {
-              item.command({ originalEvent: event, item: item });
-          }
-
-          const foundItemKey = item.items ? (this.isActiveMenu ? this.parentItemKey : this.itemKey) : this.itemKey;
-
-          this.setActiveMenuItem(foundItemKey);
-
-      },
-      checkActiveRoute(item) {
-          return this.route.path === item.to;
-      }
+  root: {
+      type: Boolean,
+      default: true
+  },
+  parentItemKey: {
+      type: String,
+      default: null
   }
+});
+
+const itemKey = ref(null);
+const isActiveMenu = ref(false);
+
+const itemClick = (event, item) => {
+    if (item.label === 'Logout') {
+        ApiService.logoutFromKeycloak();
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('jwtRefreshToken');
+        localStorage.removeItem('username');
+        router.push('/auth/login');
+    }
+    onMenuToggle();
+
+    if ((item.to || item.url) && (staticMenuMobileActive.value || overlayMenuActive.value)) {
+        onMenuToggle();
+    }
+    if (item.disabled) {
+        event.preventDefault();
+        return;
+    }
+
+    const { overlayMenuActive, staticMenuMobileActive } = useLayout();
+
+    if (item.command) {
+        item.command({ originalEvent: event, item: item });
+    }
+
+    const foundItemKey = item.items ? (isActiveMenu.value ? props.parentItemKey : itemKey.value) : itemKey.value;
+
+    setActiveMenuItem(foundItemKey);
+};
+
+const checkActiveRoute = (item) => {
+    return route.path === item.to;
+};
+
+const setActiveMenuItem = (foundItemKey) => {
+    // implement setActiveMenuItem logic here
 };
 </script>
 
