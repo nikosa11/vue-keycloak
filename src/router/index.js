@@ -112,9 +112,19 @@ const router = createRouter({
                     component: () => import('@/views/pages/signup/Register1.vue')
                 },
                 {
+                    path: '/register2',
+                    name: 'register2',
+                    component: () => import('@/views/pages/signup/Register2.vue')
+                },
+                {
                     path: '/auth/login',
                     name: 'login',
                     component: () => import('@/views/pages/auth/Login.vue')
+                },
+                {
+                    path: '/auth/forgot-password',
+                    name: 'forgot-password',
+                    component: () => import('@/views/pages/auth/ForgotPassword.vue')
                 },
                 {
                     path: '/auth/changePassword',

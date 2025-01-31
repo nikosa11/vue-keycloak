@@ -267,7 +267,7 @@ router.beforeEach((to, from, next) => {
     }
   
     // Η υπόλοιπη λογική του navigation guard παραμένει ίδια
-    const publicPages = ['/auth/login', '/auth/access', '/landing', '/register', '/reset-password', '/forgot-password'];
+    const publicPages = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/access', '/landing', '/register', '/reset-password'];
     const isPublicPage = publicPages.includes(to.path);
 
     if (!auth.value && !isPublicPage) {

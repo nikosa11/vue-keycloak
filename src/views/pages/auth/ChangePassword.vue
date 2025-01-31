@@ -1,109 +1,80 @@
 <template>
-  <div class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
-    <div class="flex flex-column align-items-center justify-content-center">
-      <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
-        <div class="w-full surface-card py-8 px-5 sm:px-8" style="border-radius: 53px">
-          <div class="text-center mb-5">
-            <div class="text-900 text-3xl font-medium mb-3">Change Password</div>
-          </div>
-          <div class="page1" id="page1">
-            <label for="email1" class="block text-900 text-xl font-medium mb-2">Password</label>
-            <input type="password" id="email1" placeholder="Password" class="w-full md:w-30rem mb-5" style="padding: 1rem" v-model="email" @keyup.enter="loginToKeycloak" />
-
-            <label for="password1" class="block text-900 font-medium text-xl mb-2">Retype Password</label>
-            <input type="password" id="password1" v-model="password" placeholder="Retype Password" class="w-full md:w-30rem mb-5" style="padding: 1rem" @keyup.enter="loginToKeycloak" />
-
-            <div class="flex align-items-center justify-content-between mb-5 gap-5"></div>
-            <Button label="Confirm" class="w-full p-3 text-xl" @click="loginToKeycloak"></Button>
-          </div>
-          <div class="page2" style="display: none;" id="page2">
-            <label for="password2" class="block text-900 text-xl font-medium mb-2">New Password</label>
-            <Password id="password2" v-model="password2" placeholder="Password" :toggleMask="true" class="w-full mb-3" inputClass="w-full" :inputStyle="{ padding: '1rem' }"></Password>
-
-            <Button label="Change Password" class="w-full p-3 text-xl" @click="changePassword"></Button>
-          </div>
+    <div class="password-wrapper">
+        <div class="bg" style="background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D, #F56040, #F77737, #FCAF45, #FFDC80);">
         </div>
-      </div>
+        <div class="password-container">
+            <img src="https://img.icons8.com/ios-filled/100/C13584/password-reset.png" alt="Change Password Icon">
+            <h2 style="background: linear-gradient(45deg, #833AB4, #E1306C, #F77737); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Change Password</h2>
+            <form @submit.prevent="handleSubmit">
+                <div class="input-container">
+                    <i class="pi pi-lock"></i>
+                    <input 
+                        type="password" 
+                        v-model="currentPassword" 
+                        placeholder="Current Password"
+                        required
+                    >
+                </div>
+                <div class="input-container">
+                    <i class="pi pi-lock"></i>
+                    <input 
+                        type="password" 
+                        v-model="newPassword" 
+                        placeholder="New Password"
+                        required
+                    >
+                </div>
+                <div class="input-container">
+                    <i class="pi pi-lock"></i>
+                    <input 
+                        type="password" 
+                        v-model="confirmPassword" 
+                        placeholder="Confirm New Password"
+                        required
+                    >
+                </div>
+                <div v-if="error" class="error-message">{{ error }}</div>
+                <button type="submit">Change Password</button>
+                <div class="back-link">
+                    <a href="/" @click.prevent="$router.push('/')">Back to Home</a>
+                </div>
+            </form>
+        </div>
     </div>
-  </div>
-  <AppConfig simple />
 </template>
 
 <script>
 import { computed, ref } from 'vue';
-import AppConfig from '@/layout/AppConfig.vue';
-import { ApiService } from '@/common/apiService.js';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import Password from 'primevue/password';
-import Button from 'primevue/button';
+import { ApiService } from '@/common/apiService.js';
 
 export default {
-  components: {
-    AppConfig,
-    Password,
-    Button
-  },
   data() {
     return {
-      email: '',
-      password: '',
-      password2: '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
       userId: '',
       checked: false,
-      error: true,
-      firstPageCompleted: false,
+      error: '',
       msg: '',
-      layoutConfig: {},
-      isLoggedIn: false,
-      toast: null,
       apiService: new ApiService(),
       router: useRouter()
     };
   },
-  computed: {
-    logoUrl() {
-      return `layout/images/${this.layoutConfig.darkTheme ? 'logo-white' : 'logo-dark'}.svg`;
-    },
-    arePasswordsEqual() {
-      return this.email === this.password;
-    },
-    isFormValid() {
-      return this.email !== '' && this.arePasswordsEqual;
-    }
-  },
   methods: {
-    async changePassword() {
-      try {
-        const responseData = await this.apiService.resetPassword(this.userId, this.password2);
-        console.log('Reset password response:', responseData);
-        alert('password changed');
-        this.router.push('/');
-      } catch (error) {
-        alert('Reset password failed:');
-        console.error('Reset password failed:', error);
-      }
-    },
-    async loginToKeycloak() {
-      if (!this.isFormValid) {
-        this.msg = 'Passwords do not match or are empty';
-        alert('Passwords do not match or are empty');
+    async handleSubmit() {
+      if (this.newPassword !== this.confirmPassword) {
+        this.error = 'Passwords do not match';
       } else {
         try {
-          const keycloakData = await this.apiService.loginToKeycloak(localStorage.getItem('username'), this.password);
+          const keycloakData = await this.apiService.loginToKeycloak(localStorage.getItem('username'), this.currentPassword);
           if (keycloakData.responseEnum === 'OPERATION_SUCCESS') {
-            this.$store.commit('login');
-            localStorage.setItem('jwtToken', keycloakData.access_token);
-            localStorage.setItem('jwtRefreshToken', keycloakData.refresh_token);
-            console.log('PassWord verified:', keycloakData);
-            this.msg = '';
-            this.error = true;
-            const userInfo = await this.apiService.getUserInfo();
-            this.firstPageCompleted = true;
-            document.getElementById('page1').style.display = 'none';
-            document.getElementById('page2').style.display = 'block';
-            this.userId = userInfo.sub;
-            console.log(userInfo.sub);
+            const responseData = await this.apiService.resetPassword(this.userId, this.newPassword);
+            console.log('Reset password response:', responseData);
+            alert('password changed');
+            this.router.push('/');
           } else {
             alert('Wrong Password');
             this.msg = 'Wrong Password';
@@ -117,7 +88,7 @@ export default {
     async fetchUserData() {
       try {
         const response = await this.apiService.getUserInfo();
-        this.$store.commit('setUserData', response);
+        this.userId = response.sub;
       } catch (error) {
         localStorage.removeItem('jwtToken');
         localStorage.removeItem('jwtRefreshToken');
@@ -127,24 +98,136 @@ export default {
     }
   },
   created() {
-    this.layoutConfig = this.$store.state.layoutConfig || {};
-    this.isLoggedIn = this.$store.state.isLoggedIn;
     this.fetchUserData();
   }
 };
 </script>
 
 <style scoped>
-.pi-eye {
-  transform: scale(1.6);
-  margin-right: 1rem;
+.password-wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
 }
 
-.pi-eye-slash {
-  transform: scale(1.6);
-  margin-right: 1rem;
+.bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: 400% 400% !important;
+    animation: gradient 15s ease infinite;
+    z-index: -1;
 }
-.w-full {
-  border-radius: 25px;
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.password-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2.5rem;
+    border-radius: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+    margin: 1rem;
+    text-align: center;
+}
+
+.password-container img {
+    width: 80px;
+    margin-bottom: 1.5rem;
+}
+
+.input-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.input-container input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    border: 1px solid rgba(131, 58, 180, 0.2);
+    border-radius: 1.5rem;
+    font-size: 1rem;
+    transition: all 0.3s;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.input-container input:focus {
+    outline: none;
+    border-color: #C13584;
+    box-shadow: 0 0 0 2px rgba(193, 53, 132, 0.2);
+}
+
+.input-container i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(45deg, #833AB4, #E1306C);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+button {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 1.5rem;
+    background: linear-gradient(45deg, #833AB4, #E1306C);
+    color: white;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 1.5rem;
+}
+
+button:hover {
+    background: linear-gradient(45deg, #C13584, #FD1D1D);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(193, 53, 132, 0.3);
+}
+
+.error-message {
+    color: #E1306C;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.back-link {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+a {
+    color: #C13584;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+a:hover {
+    color: #E1306C;
+}
+
+@media screen and (max-width: 576px) {
+    .password-container {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+    }
 }
 </style>

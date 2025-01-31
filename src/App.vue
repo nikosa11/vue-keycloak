@@ -19,13 +19,21 @@ export default {
         return {
             inactivityTimer: null,
             inactivityTimeout: 2 * 60 * 1000, // 5 minutes in milliseconds
-            isActive: true
+            isActive: true,
+            exceptions: [
+                '/auth/login',
+                '/auth/register',
+                '/auth/access',
+                '/auth/error',
+                'auth/forgot-password',
+                'register2'
+            ]
         }
     },
     watch: {
         '$route'(to) {
             // Clear timer on public routes
-            const publicRoutes = ['/landing', '/auth/login', '/register', '/auth/access', '/auth/error'];
+            const publicRoutes = ['/landing', '/auth/login', '/register', '/auth/access', '/auth/error', 'auth/forgot-password'];
             if (publicRoutes.includes(to.path)) {
                 this.clearInactivityTimer();
                 this.isActive = true;
@@ -51,7 +59,7 @@ export default {
             document.addEventListener('scroll', this.handleUserActivity);
 
             // Start initial timer only if not on a public route
-            const publicRoutes = ['/landing', '/auth/login', '/register', '/auth/access', '/auth/error'];
+            const publicRoutes = ['/landing', '/auth/login', '/register', '/auth/access', '/auth/error', '/auth/forgot-password','register2'];
             if (!publicRoutes.includes(this.$route.path)) {
                 this.startInactivityTimer();
             }
@@ -66,7 +74,7 @@ export default {
         },
         startInactivityTimer() {
             // Don't set timer on public pages
-            const publicRoutes = ['/landing', '/auth/login', '/register', '/auth/access', '/auth/error'];
+            const publicRoutes = ['/landing', '/auth/login', '/register', '/auth/access', '/auth/error', '/auth/forgot-password','register2'];
             if (publicRoutes.includes(this.$route.path)) {
                 return;
             }
@@ -80,7 +88,7 @@ export default {
         },
         resetInactivityTimer() {
             // Don't reset timer on public pages
-            const publicRoutes = ['/landing', '/auth/login', '/register', '/auth/access', '/auth/error'];
+            const publicRoutes = ['/landing', '/auth/login', '/register', '/auth/access', '/auth/error', '/auth/forgot-password','register2'];
             if (publicRoutes.includes(this.$route.path)) {
                 return;
             }
