@@ -10,7 +10,8 @@ const store = createStore({
       count: 0,
       isLoggedIn: false,
       userData: {},
-      wizzardOn: false
+      wizzardOn: false,
+      userId: null
     };
   },
   mutations: {
@@ -31,6 +32,9 @@ const store = createStore({
     },
     setWizzard(state, data) {
       state.wizzardOn = data;
+    },
+    setUserId(state, id) {
+      state.userId = id;
     }
   },
   actions: {

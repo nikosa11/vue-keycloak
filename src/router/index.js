@@ -69,11 +69,6 @@ const router = createRouter({
                             component: () => import('@/views/pages/home/Profile.vue')
                         },
                         {
-                    path: '/blocks',
-                            name: 'blocks',
-                            component: () => import('@/views/utilities/Blocks.vue')
-                        },
-                        {
                     path: '/crud',
                             name: 'projects',
                             component: () => import('@/views/pages/home/Crud.vue')

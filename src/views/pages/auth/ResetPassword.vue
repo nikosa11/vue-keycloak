@@ -50,8 +50,9 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useStore } from 'vuex';
 import Password from 'primevue/password';
 import { ApiService } from '@/common/apiService.js';
 
@@ -62,12 +63,24 @@ export default {
   setup() {
     const router = useRouter();
     const route = useRoute();
+    const store = useStore();
     const apiService = new ApiService();
 
     const newPassword = ref('');
     const retypePassword = ref('');
     const passwordError = ref('');
-    const userId = ref(route.query.id);
+
+    onMounted(() => {
+      const queryUserId = route.query.id;
+      if (queryUserId) {
+        store.commit('setUserId', queryUserId);
+      }
+      
+      // Check if userId exists in store, if not redirect to landing
+      if (!store.state.userId) {
+        router.push('/landing');
+      }
+    });
 
     const isFormValid = computed(() => {
       return newPassword.value && retypePassword.value && newPassword.value === retypePassword.value;
@@ -97,7 +110,13 @@ export default {
         const accessToken = await apiService.getAccessToken();
         localStorage.setItem('jwtToken', accessToken);
 
-        const response = await apiService.resetPassword(userId.value, newPassword.value);
+        const userId = store.state.userId;
+        if (!userId) {
+          passwordError.value = 'User ID not found';
+          return;
+        }
+
+        const response = await apiService.resetPassword(userId, newPassword.value);
         
         if (response === 'completted') {
           alert('Password reset successful. Please log in with your new password.');

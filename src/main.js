@@ -246,10 +246,10 @@ router.beforeEach((to, from, next) => {
 
 
           if (decodedToken.exp > currentTime) {
-            // Το token είναι ακόμα έγκυρο
-            alert(`Έγκυρο token για τον χρήστη: ${decodedToken.eml}`);
-            // Εδώ μπορείτε να κάνετε ανακατεύθυνση σε μια σελίδα επαναφοράς κωδικού
-            next(`/reset-password?id=${decodedToken.sub}`);
+            // Store userId in Vuex
+            store.commit('setUserId', decodedToken.sub);
+            // Redirect to reset password page
+            next(`/reset-password`);
             return;
           } else {
             // Το token έχει λήξει
