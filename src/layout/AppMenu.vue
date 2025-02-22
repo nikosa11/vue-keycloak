@@ -86,9 +86,16 @@ export default {
                             icon: 'pi pi-fw pi-chart-line', 
                             to: '/discovery/roi' 
                         },
-                        { label: 'Campaings', icon: 'pi pi-fw pi-shopping-cart', to: '/crud' },
-
-                       
+                        { 
+                            label: 'Campaings', 
+                            icon: 'pi pi-fw pi-shopping-cart', 
+                            to: '/crud' 
+                        },
+                        { 
+                            label: 'AI Influencer', 
+                            icon: 'pi pi-fw pi-star', 
+                            to: '/ai-influencer-creator' 
+                        }
                     ]
                 }
             ],

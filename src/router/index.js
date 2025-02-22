@@ -83,7 +83,12 @@ const router = createRouter({
                             name: 'notifications',
                             component: () => import('@/views/pages/home/Notifications.vue')
                         },
-                    ]
+                        {
+                    path: '/ai-influencer-creator',
+                    name: 'ai-influencer-creator',
+                    component: () => import('@/views/ai-influencer/AiInfluencerCreator.vue')
+                },
+                ]
                 },
                 {
                     path: '/discovery',
